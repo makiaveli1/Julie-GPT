@@ -15,7 +15,7 @@ import os
 import dj_database_url
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv('keys.env')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,6 +26,8 @@ TEMPLATES_DIR = os.path.join(BASE_DIR, 'templates')
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('SECRET_KEY')
+print(os.getenv('SECRET_KEY'))
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -45,7 +47,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'cloudinary_storage',
-    'django.contrib.staticfiles',
     'cloudinary',
     'chatbot',
 ]
@@ -94,6 +95,7 @@ WSGI_APPLICATION = 'Julie_bot.wsgi.application'
 DATABASES = {
     'default': dj_database_url.parse(os.getenv("DATABASE_URL"))
 }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
