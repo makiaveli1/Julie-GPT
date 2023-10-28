@@ -1,2 +1,0 @@
-# Julie-GPT
- django-project
