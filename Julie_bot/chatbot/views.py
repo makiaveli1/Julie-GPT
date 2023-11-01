@@ -5,6 +5,7 @@ import os
 from dotenv import load_dotenv
 from Prompt import julie_description  
 import logging
+from django.contrib import auth
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
@@ -51,3 +52,16 @@ def chatbot(request):
         response = chatbot_logic(user_input)
         return JsonResponse({'message': user_input, 'response': response})
     return render(request, 'chatbot.html')
+
+
+def login(request):
+    return render(request, 'login.html')
+
+
+def register(request):
+    return render(request, 'register.html')
+
+
+def logout(request):
+    auth.logout(request)
+    return render(request, 'login.html')
