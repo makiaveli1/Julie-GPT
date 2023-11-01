@@ -68,6 +68,11 @@
 <div class="chat-container">
   <div class="card flex-grow-1">
     <div class="card-header bg-primary text-white">Chat</div>
+    {% if user.is_authenticated %}
+    <div class="card-header bg-primary text-white"><b>Welcome, {{user.username}}</b>  <a style="color: white;" href="{% url 'logout' %}">Logout</a> </div>
+    {% else %} 
+    <div class="card-header bg-primary text-white"><a style="color: white;" href="{% url 'login' %}">Login</a>  <a style="color: white;" href="{% url 'register' %}">Register</a> </div>
+    {% endif %}
     <div class="card-body messages-box">
       
       <ul class="list-unstyled messages-list">
@@ -78,7 +83,7 @@
               <b>Julie</b>
             </div>
             <div class="message-content">
-              Hi, I am your Julie, you can ask me anything.
+              Hi {{user.username}}, I am your personal assistant Julie, how can I help you today?
             </div>
           </div>
         </li>
