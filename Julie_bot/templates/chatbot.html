@@ -1,71 +1,14 @@
 {% extends 'base.html' %}
 
+{% load static %}
+
 {% block styles %}
-<style>
-    body, html {
-      height: 100%;
-    }
-
-    .messages-box {
-      flex: 1;
-      overflow-y: auto;
-    }
-
-    .messages-list {
-      padding-left: 0;
-    }
-
-    .message {
-      margin-bottom: 15px;
-      list-style: none;
-    }
-
-    .message-text {
-      padding: 10px;
-      border-radius: 5px;
-    }
-
-    .sent {
-      background-color: #dcf8c6;
-      align-self: flex-end;
-    }
-
-    .received {
-      background-color: #f1f0f0;
-      align-self: flex-start;
-    }
-
-    .message-form {
-      display: flex;
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      padding: 10px;
-      background-color: #f8f9fa;
-    }
-
-    .message-input {
-      flex: 1;
-      border-radius: 0;
-      border-right: none;
-    }
-
-    .btn-send {
-      border-radius: 0;
-    }
-
-    .chat-container {
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-    }
-  </style>
+<link rel="stylesheet" href="{% static 'css/style_chatbot.css' %}" type="text/css">
 {% endblock %}
 
 
 {% block content %}
-<div class="chat-container">
+{% comment %} <div class="chat-container">
   <div class="card flex-grow-1">
     <div class="card-header bg-primary text-white">Chat</div>
     {% if user.is_authenticated %}
@@ -77,17 +20,6 @@
       
       <ul class="list-unstyled messages-list">
         
-        {% comment %} <li class="message received">
-          <div class="message-text">
-            <div class="message-sender">
-              <b>Julie</b>
-            </div>
-            <div class="message-content">
-              Hi {{user.username}}, I am your personal assistant Julie, how can I help you today?
-            </div>
-          </div>
-        </li> {% endcomment %}
-
         {% for chat in chats %}
           {% if chat.user == request.user %}
              <li class="message sent">
@@ -130,10 +62,40 @@
       </div>
     </div>
   </form>
+</div> {% endcomment %}
+<div class="chatbox">
+  <header>
+    <span class="username">{{user.username}}</span>
+    <!-- If user is not authenticated, show Login button. Otherwise, show Logout button. -->
+    {% if not user.is_authenticated %}
+        <a href="{% url 'login' %}"><button class="login-btn">Login</button></a>
+    {% else %}
+        <a href="{% url 'logout' %}"><button class="logout-btn">Logout</button></a>
+    {% endif %}
+</header>
+<h1>Julie</h1>
+<div id="chat-container">
+    {% for chat in chats %}
+        <div class="message">
+            <b>You:</b> {{chat.message}}
+        </div>
+        <div class="message">
+            <b>Julie:</b> {{chat.response}}
+        </div>
+    {% endfor %}
+</div>
+<div class="input-container">
+    <form method="post">
+        {% csrf_token %}
+        <input type="text" name="message" placeholder="Type a message...">
+        <button type="submit">Send</button>
+    </form>
+</div>
+
 </div>
 <script>
   
-  const messagesList = document.querySelector('.messages-list');
+  {% comment %} const messagesList = document.querySelector('.messages-list');
   const messageForm = document.querySelector('.message-form');
   const messageInput = document.querySelector('.message-input');
 
@@ -185,7 +147,53 @@
           `;
         messagesList.appendChild(messageItem);
       });
-  });
+  }); {% endcomment %}
+  document.addEventListener("DOMContentLoaded", function() {
+    const chatForm = document.querySelector(".input-container form");
+
+    chatForm.addEventListener("submit", function(event) {
+        event.preventDefault();
+
+        const messageInput = chatForm.querySelector("input[name='message']");
+        const messageText = messageInput.value;
+
+        if (!messageText) return;
+
+        fetch("/path-to-your-chatbot-endpoint/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-CSRFToken": getCookie("csrftoken")
+            },
+            body: new URLSearchParams({
+                "message": messageText
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            const chatContainer = document.getElementById("chat-container");
+
+            const userMessage = document.createElement("div");
+            userMessage.classList.add("message");
+            userMessage.innerHTML = `<b>You:</b> ${data.message}`;
+            chatContainer.appendChild(userMessage);
+
+            const julieMessage = document.createElement("div");
+            julieMessage.classList.add("message");
+            julieMessage.innerHTML = `<b>Julie:</b> ${data.response}`;
+            chatContainer.appendChild(julieMessage);
+
+            // Clear the input
+            messageInput.value = "";
+        });
+    });
+
+    function getCookie(name) {
+      let value = "; " + document.cookie;
+      let parts = value.split("; " + name + "=");
+      if (parts.length == 2) return parts.pop().split(";").shift();
+  }  
+});
 
 </script>
 

@@ -1,0 +1,175 @@
+/* Julie_bot\static\css\style_chatbot.css
+    body, html {
+      height: 100%;
+    }
+
+    .messages-box {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .messages-list {
+      padding-left: 0;
+    }
+
+    .message {
+      margin-bottom: 15px;
+      list-style: none;
+    }
+
+    .message-text {
+      padding: 10px;
+      border-radius: 5px;
+    }
+
+    .sent {
+      background-color: #dcf8c6;
+      align-self: flex-end;
+    }
+
+    .received {
+      background-color: #f1f0f0;
+      align-self: flex-start;
+    }
+
+    .message-form {
+      display: flex;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 10px;
+      background-color: #f8f9fa;
+    }
+
+    .message-input {
+      flex: 1;
+      border-radius: 0;
+      border-right: none;
+    }
+
+    .btn-send {
+      border-radius: 0;
+    }
+
+    .chat-container {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    } */
+
+body {
+  font-family: Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f4f4f4;
+}
+
+.chatbox {
+  border: 1px solid #ccc;
+  max-width: 400px;
+  width: 100%;
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  max-width: 800px;
+  height: 80vh;
+  margin: 5% auto;
+  padding: 10px;
+  border-radius: 20px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+}
+
+h1 {
+  text-align: center;
+  background-color: #0099cc;
+  color: #fff;
+  padding: 10px;
+  margin: 0;
+  margin-bottom: 20px;
+  border-radius: 15px;
+}
+
+#chat-container {
+width: 100%;
+height: 500px; 
+border-radius: 15px;
+padding: 10px;
+border: 2px solid #e0e0e0; 
+max-height: 500px;
+margin-bottom: 20px;
+overflow-y: auto;
+}
+
+.input-container form {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  gap: 1rem;
+}
+
+input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 0.1rem solid #ccc;
+    border-radius: 5px;
+}
+
+button {
+  padding: 0.5rem 1rem;
+  margin-bottom: 0.2rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  background-color: #e74c3c; 
+  color: white;
+}
+  
+button:hover {
+  background-color: #c0392b; 
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 10px;
+  background-color: #3498db; 
+  color: white;
+  border-radius: 10px;
+}
+  
+.username {
+  font-weight: bold;
+}
+
+.login-btn, .logout-btn {
+  padding: 5px 15px;
+  border-radius: 5px;
+  border: none;
+  cursor: pointer;
+}
+
+.login-btn, .logout-btn {
+  background-color: #007BFF;
+  border: none;
+  color: white;
+  padding: 10px 15px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.message {
+  margin-bottom: 10px;
+}

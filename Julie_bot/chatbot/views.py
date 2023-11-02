@@ -2,22 +2,32 @@ from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.contrib import auth
 from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
 from .models import Chat
 from django.utils import timezone
 from .Juliebot import Juliebot
 
 # Setup logging
-
+@login_required
 def chatbot(request):
-    chats = Chat.objects.filter(user=request.user).order_by('-created_at')
-    
-    if request.method == 'POST':
-        user_input = request.POST.get('message')
-        response = Juliebot().chatbot_logic(user_input)
-        chat = Chat(user=request.user, message=user_input, response=response,created_at=timezone.now())
-        chat.save()
-        return JsonResponse({'message': user_input, 'response': response})
-    
+    # Initialize chats as empty for all cases
+    chats = []
+
+    # Check if the user is authenticated
+    if request.user.is_authenticated:
+        chats = Chat.objects.filter(user=request.user).order_by('-created_at')
+        
+        if request.method == 'POST':
+            user_input = request.POST.get('message')
+            response = Juliebot().chatbot_logic(user_input)
+            chat = Chat(user=request.user, message=user_input, response=response, created_at=timezone.now())
+            chat.save()
+            return JsonResponse({'message': user_input, 'response': response})
+
+    else:
+        # Handle unauthenticated users - Redirect to login page or show an error
+        return redirect('login')  # Assuming you have a login view named 'login'
+
     return render(request, 'chatbot.html', {'chats': chats})
 
 
@@ -59,4 +69,4 @@ def register(request):
 
 def logout(request):
     auth.logout(request)
-    return render(request, 'login.html')
+    return render(request, 'chatbot.html')
