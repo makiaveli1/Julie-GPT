@@ -19,7 +19,8 @@ def chatbot(request):
         
         if request.method == 'POST':
             user_input = request.POST.get('message')
-            response = Juliebot().chatbot_logic(user_input)
+            username = request.user.username  # Retrieve the username
+            response = Juliebot().chatbot_logic(user_input, username=username)  
             chat = Chat(user=request.user, message=user_input, response=response, created_at=timezone.now())
             chat.save()
             return JsonResponse({'message': user_input, 'response': response})
