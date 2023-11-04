@@ -8,61 +8,6 @@
 
 
 {% block content %}
-{% comment %} <div class="chat-container">
-  <div class="card flex-grow-1">
-    <div class="card-header bg-primary text-white">Chat</div>
-    {% if user.is_authenticated %}
-    <div class="card-header bg-primary text-white"><b>Welcome, {{user.username}}</b>  <a style="color: white;" href="{% url 'logout' %}">Logout</a> </div>
-    {% else %} 
-    <div class="card-header bg-primary text-white"><a style="color: white;" href="{% url 'login' %}">Login</a>  <a style="color: white;" href="{% url 'register' %}">Register</a> </div>
-    {% endif %}
-    <div class="card-body messages-box">
-      
-      <ul class="list-unstyled messages-list">
-        
-        {% for chat in chats %}
-          {% if chat.user == request.user %}
-             <li class="message sent">
-          <div class="message-text">
-            <div class="message-sender">
-              <b>You</b>
-            </div>
-            <div class="message-content">
-              {{chat.message}}
-            </div>
-          </div>
-        </li>
-        
-        <li class="message received">
-          <div class="message-text">
-            <div class="message-sender">
-              <b>Julie</b>
-            </div>
-            <div class="message-content">
-              {{chat.response}}
-            </div>
-          </div>
-        </li>
-
-           {% endif %}
-        {% endfor %}
-      </ul>
-      
-    </div>
-    <br><br>
-    <br><br>
-    <br><br>
-  </div>
-  <form class="message-form">
-    {%csrf_token%}
-    <div class="input-group">
-      <input type="text" class="form-control message-input" placeholder="Type your message...">
-      <div class="input-group-append">
-        <button type="submit" class="btn btn-primary btn-send">Send</button>
-      </div>
-    </div>
-  </form>
-</div> {% endcomment %}
 <div class="chatbox">
   <header>
     <span class="username">{{user.username}}</span>
@@ -94,60 +39,6 @@
 
 </div>
 <script>
-  
-  {% comment %} const messagesList = document.querySelector('.messages-list');
-  const messageForm = document.querySelector('.message-form');
-  const messageInput = document.querySelector('.message-input');
-
-  messageForm.addEventListener('submit', (event) => {
-    event.preventDefault();
-
-    const message = messageInput.value.trim();
-    if (message.length === 0) {
-      return;
-    }
-
-    const messageItem = document.createElement('li');
-    messageItem.classList.add('message', 'sent');
-    messageItem.innerHTML = `
-        <div class="message-text">
-            <div class="message-sender">
-                <b>You</b>
-            </div>
-            <div class="message-content">
-                ${message}
-            </div>
-        </div>`;
-    messagesList.appendChild(messageItem);
-
-    messageInput.value = '';
-
-    fetch('', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        'csrfmiddlewaretoken': document.querySelector('[name=csrfmiddlewaretoken]').value,
-        'message': message
-      })
-    })
-      .then(response => response.json())
-      .then(data => {
-        const response = data.response;
-        const messageItem = document.createElement('li');
-        messageItem.classList.add('message', 'received');
-        messageItem.innerHTML = `
-        <div class="message-text">
-            <div class="message-sender">
-              <b>Julie</b>
-            </div>
-            <div class="message-content">
-                ${response}
-            </div>
-        </div>
-          `;
-        messagesList.appendChild(messageItem);
-      });
-  }); {% endcomment %}
   document.addEventListener("DOMContentLoaded", function() {
     const chatForm = document.querySelector(".input-container form");
 
@@ -178,13 +69,25 @@
             userMessage.innerHTML = `<b>You:</b> ${data.message}`;
             chatContainer.appendChild(userMessage);
 
-            const julieMessage = document.createElement("div");
-            julieMessage.classList.add("message");
-            julieMessage.innerHTML = `<b>Julie:</b> ${data.response}`;
-            chatContainer.appendChild(julieMessage);
+            // Append typing indicator
+            const typingIndicator = document.createElement("div");
+            typingIndicator.classList.add("message");
+            typingIndicator.innerHTML = `<b>Julie:</b> <span class="typing">typing<span class="dot1">.</span><span class="dot2">.</span><span class="dot3">.</span></span>`;
+            chatContainer.appendChild(typingIndicator);
 
-            // Clear the input
-            messageInput.value = "";
+            // Simulate typing delay
+            setTimeout(function() {
+                // Remove typing indicator
+                chatContainer.removeChild(typingIndicator);
+                
+                const julieMessage = document.createElement("div");
+                julieMessage.classList.add("message");
+                julieMessage.innerHTML = `<b>Julie:</b> ${data.response}`;
+                chatContainer.appendChild(julieMessage);
+                
+                // Clear the input
+                messageInput.value = "";
+            }, 2000); // Change this value for desired typing delay
         });
     });
 
@@ -192,7 +95,7 @@
       let value = "; " + document.cookie;
       let parts = value.split("; " + name + "=");
       if (parts.length == 2) return parts.pop().split(";").shift();
-  }  
+    }  
 });
 
 </script>
