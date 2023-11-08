@@ -80,6 +80,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'Julie_bot.wsgi.application'
 
+AUTH_USER_MODEL = 'chatbot.CustomUser'
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
@@ -144,6 +145,8 @@ DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 ACCOUNT_EMAIL_VERIFICATION = 'none'
+
+
 
 LOGGING = {
     'version': 1,

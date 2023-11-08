@@ -7,10 +7,56 @@
 {% endblock %} {% block content %}
 
 <div class="auth-container">
-  <!-- Position the username at the top left -->
+  <!-- Replace the username with a button -->
   <div class="username-container">
-    <span class="username">{{ user.username|escape }}</span>
+    <button onclick="openProfilePopup()" class="btn btn-primary btn-md profile-btn" role="button">
+      Profile
+    </button>
   </div>
+<!-- Profile Popup Content -->
+<div id="profile-popup" class="profile-popup" style="display: none;">
+  <form id="profile-form">
+    <!-- Name -->
+    <div class="form-group">
+      <label for="user-full-name">Full Name:</label>
+      <input type="text" id="user-full-name" name="full_name" required>
+    </div>
+    <!-- Email -->
+    <div class="form-group">
+      <label for="user-email">Email:</label>
+      <input type="email" id="user-email" name="email" required>
+    </div>
+    <!-- Password Update -->
+    <div class="form-group">
+      <label for="user-password">Password:</label>
+      <input type="password" id="user-password" name="password">
+      <small>Leave blank to keep the current password.</small>
+    </div>
+    <!-- Phone -->
+    <div class="form-group">
+      <label for="user-phone">Phone Number:</label>
+      <input type="tel" id="user-phone" name="phone">
+    </div>
+    <!-- Bio -->
+    <div class="form-group">
+      <label for="user-bio">Bio:</label>
+      <textarea id="user-bio" name="bio"></textarea>
+    </div>
+    <!-- Profile Picture -->
+    <div class="form-group">
+      <label for="profile-picture">Profile Picture:</label>
+      <input type="file" id="profile-picture" name="profile_picture" accept="image/*">
+    </div>
+    <!-- Social Media Links -->
+    <div class="form-group">
+      <label for="user-social">Social Media Links:</label>
+      <input type="url" id="user-social" name="social_media">
+    </div>
+    <!-- Submit and Cancel Buttons -->
+    <button type="submit" class="btn btn-primary">Save</button>
+    <button type="button" class="btn btn-secondary" onclick="closeProfilePopup()">Cancel</button>
+  </form>
+</div>
 
   <!-- Position the auth buttons at the top right -->
   <div class="auth-buttons">
@@ -31,9 +77,17 @@
   <div id="chat-container">
     <!-- Older messages can be loaded dynamically from here -->
     {% for chat in chats %}
-    <div class="message"><b>You:</b> {{ chat.message|escape }}</div>
-    <div class="message"><b>Julie:</b> {{ chat.response|escape }}</div>
-    {% endfor %}
+    <div class="message user-message">
+      <i class="fas fa-user avatar"></i>
+      <span class="message-text">{{ chat.message|escape }}</span>
+      <span class="timestamp">{{ chat.timestamp|date:"H:i" }}</span>
+    </div>
+    <div class="message chatbot-message">
+      <img src="static\images\julie.jpg" alt="Julie" class="avatar chatbot-avatar">
+      <span class="message-text">{{ chat.response|escape }}</span>
+      <span class="timestamp">{{ chat.timestamp|date:"H:i" }}</span>
+    </div>
+    {% endfor %}             
     <!-- New messages will be appended here -->
   </div>
 
