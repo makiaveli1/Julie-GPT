@@ -1,5 +1,5 @@
-import autogen
 import os
+import autogen
 from dotenv import load_dotenv
 from Prompt import julie_description
 import logging
@@ -9,7 +9,7 @@ logging.basicConfig(level=logging.INFO)
 
 
 autogen_config = {
-    "model": "gpt-4-0613",
+    "model": "gpt-4-1106-preview",
     "max_tokens": 4000,
     "temperature": 0.65,
     "top_p": 0.8,
