@@ -1,9 +1,10 @@
 from pydantic import BaseModel, Field
 from typing import List
-from instructor import llm_validator, patch
+import openai
+import instructor
 
-# Apply the Instructor patch to the OpenAI library
-patch()
+# Enables `response_model`
+instructor.patch(openai)
 
 # Define the model schema
 

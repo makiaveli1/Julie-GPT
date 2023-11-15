@@ -1,16 +1,17 @@
 from .models import Chat, CustomUser
 from django.contrib.auth.decorators import login_required
 from django.core.files.storage import FileSystemStorage
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseBadRequest
 from django.shortcuts import render, redirect
 from django.contrib import auth
 from django.utils import timezone
 from dotenv import load_dotenv
 import os
+import logging
 from .Juliebot import Juliebot
 from .brain import LongTermMemory
 
-
+logger = logging.getLogger(__name__)
 
 load_dotenv('keys.env')
 
@@ -20,43 +21,51 @@ redis_username = os.getenv("REDIS_USER")
 redis_password = os.getenv("REDIS_PASS")
 
 
-# Setup logging
+
 @login_required
 def chatbot(request):
-    # Initialize chats as empty for all cases
-    chats = []
+    if not request.user.is_authenticated:
+        # Handle unauthenticated users
+        return redirect('login')  # Redirect to login page
 
-    # Check if the user is authenticated
-    if request.user.is_authenticated:
+    # For GET requests, render the chatbot page with chat history
+    if request.method == 'GET':
         chats = Chat.objects.filter(user=request.user).order_by('-created_at')
+        return render(request, 'chatbot.html', {'chats': chats})
 
-        # Initialize an instance of LongTermMemory (you need to replace the parameters with the actual values or environment variables)
-        long_term_memory = LongTermMemory(redis_host, redis_port, redis_username, redis_password)
+    # For POST requests, process the chat message
+    elif request.method == 'POST':
+        user_input = request.POST.get('message')
+        logger.error(f"User input retrieved from POST request: '{user_input}'")
+        username = request.user.username
 
-        if request.method == 'POST':
-            user_input = request.POST.get('message')
-            username = request.user.username
+        # Validate user input
+        if not user_input or not user_input.strip():
+            # Return a bad request response for invalid input
+            return HttpResponseBadRequest("Invalid or empty message.")
 
-            # Initialize Juliebot with LongTermMemory
+        try:
+            # Initialize Juliebot and generate response
+            long_term_memory = LongTermMemory(redis_host, redis_port, redis_username, redis_password)
             julie_bot = Juliebot(long_term_memory=long_term_memory)
-            julie_bot.start_conversation(username)  # Initialize conversation history
+            julie_bot.start_conversation(username)
+            response = julie_bot.generate_response(username, user_input)
+            logger.error(f"Response generated from Juliebot: '{response}'")
 
-            # Generate a response using the chatbot_logic method
-            response = julie_bot.generate_response(username, user_input) 
-            
             # Save the chat to the database
-            chat = Chat(user=request.user, message=user_input, response=response, created_at=timezone.now())
-            chat.save()
-            
-            # Return the JsonResponse with the message and response
-            return JsonResponse({'message': user_input, 'response': response})
+            Chat.objects.create(user=request.user, message=user_input, response=response, created_at=timezone.now())
+
+        except Exception as e:
+            logger.error(f"Error in generating chat response: {e}")
+            # Return a generic error message to the user
+            return JsonResponse({'message': user_input, 'response': "Sorry, there was an error processing your request."})
+
+        # Return the JsonResponse with the message and response
+        return JsonResponse({'message': user_input, 'response': response})
 
     else:
-        # Handle unauthenticated users - Redirect to login page or show an error
-        return redirect('login')  # Assuming you have a login view named 'login'
-
-    # Render the chatbot page with the chats context
-    return render(request, 'chatbot.html', {'chats': chats})
+        # Handle other HTTP methods
+        return HttpResponseBadRequest("Unsupported request method.")
 
 
 
@@ -94,6 +103,8 @@ def register(request):
             error_message = 'Passwords must match'
             return render(request, 'register.html', {'error': error_message})
     return render(request, 'register.html')
+
+
 @login_required
 def update_profile(request):
     if request.method == 'POST':

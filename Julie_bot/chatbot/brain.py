@@ -6,10 +6,7 @@ import json
 import logging
 from jsonschema import validate, ValidationError
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-)
+logger = logging.getLogger(__name__)
 
 class LongTermMemory:
     """
@@ -48,19 +45,19 @@ class LongTermMemory:
     def test_connection(self):
         try:
             self.redis_client.ping()
-            logging.info(
+            logger.error(
                 f"Successfully connected to Redis at {self.redis_host}:{self.redis_port}."
             )
         except redis.ConnectionError as e:
-            logging.error("Could not connect to Redis. Connection failed.")
+            logger.error("Could not connect to Redis. Connection failed.")
             raise e
         except redis.exceptions.AuthenticationError as e:
-            logging.error(
+            logger.error(
                 "Authentication failed: invalid username-password pair."
             )
             raise e
         except Exception as e:
-            logging.error(f"Failed to connect to Redis: {e}")
+            logger.error(f"Failed to connect to Redis: {e}")
             raise e
 
     def vectorize_text(self, text):
@@ -73,14 +70,14 @@ class LongTermMemory:
             text = [text]  # Convert single string to a list
 
         if not all(isinstance(t, str) for t in text):
-            logging.error(f"vectorize_text received invalid input: {text}")
+            logger.error(f"vectorize_text received invalid input: {text}")
             raise ValueError("Input text must be a string or a list of strings.")
 
         return model.encode(text)
 
     def store_vector(self, username, vector):
         if not isinstance(vector, (np.ndarray, list)):
-            logging.error(f"Expected vector to be a numpy array or a list, got {type(vector)}")
+            logger.error(f"Expected vector to be a numpy array or a list, got {type(vector)}")
             raise ValueError(f"Expected vector to be a numpy array or a list, got {type(vector)}")
 
         vector_list = vector if isinstance(vector, list) else vector.tolist()
@@ -88,9 +85,9 @@ class LongTermMemory:
         key = f"vec:{username}"
         try:
             self.redis_client.execute_command('HSET', key, 'vector', json.dumps(vector_list))
-            logging.info(f"Stored vector for {username}")
+            logger.error(f"Stored vector for {username}")
         except Exception as e:
-            logging.error(f"Failed to store vector for {username}: {e}")
+            logger.error(f"Failed to store vector for {username}: {e}")
             raise e
 
     def search_similar_conversations(self, username, text):
@@ -100,10 +97,10 @@ class LongTermMemory:
 
         try:
             results = self.redis_client.execute_command('FT.SEARCH', f'idx:{username}', f'@vector:[{",".join(map(str, vector_list))}]')
-            logging.info(f"Search results: {results}")
+            logger.error(f"Search results: {results}")
             return results
         except Exception as e:
-            logging.error(f"Failed to search for similar conversations for {username}: {e}")
+            logger.error(f"Failed to search for similar conversations for {username}: {e}")
             raise e
 
     def update_conversation_history_with_vector(self, username, role, content):
@@ -119,27 +116,27 @@ class LongTermMemory:
             return history
         except redis.exceptions.RedisError as e:
             error_msg = f"Failed to retrieve conversation history for {username} due to Redis error: {e}"
-            logging.error(error_msg)
+            logger.error(error_msg)
             raise Exception(error_msg) from e
         except json.JSONDecodeError as e:
             error_msg = f"Failed to decode conversation history for {username}. Invalid JSON format: {e}"
-            logging.error(error_msg)
+            logger.error(error_msg)
             raise Exception(error_msg) from e
         except Exception as e:
             error_msg = f"An unexpected error occurred while retrieving conversation history for {username}: {e}"
-            logging.error(error_msg)
+            logger.error(error_msg)
             raise Exception(error_msg) from e
 
     def set_user_data(self, username, user_data):
         try:
             validate(instance=user_data, schema=self.schema)
             self.redis_client.set(username, json.dumps(user_data))
-            logging.info(f"Saved user data for {username}")
+            logger.error(f"Saved user data for {username}")
         except redis.exceptions.RedisError as e:
-            logging.error(f"Redis operation failed for {username}")
+            logger.error(f"Redis operation failed for {username}")
             raise e
         except Exception as e:
-            logging.error(f"Failed to load user data for {username}: {e}")
+            logger.error(f"Failed to load user data for {username}: {e}")
             raise e
 
     def update_conversation_history(self, username, role, content):
@@ -147,17 +144,17 @@ class LongTermMemory:
         value = json.dumps({"role": role, "content": content})
         try:
             self.redis_client.lpush(key, value)
-            logging.info(
+            logger.error(
                 f"Added message to conversation history for {username}"
             )
 
             self.redis_client.ltrim(key, 0, 5000)
-            logging.info(f"Trimmed conversation history for {username}")
+            logger.error(f"Trimmed conversation history for {username}")
         except redis.exceptions.RedisError as e:
-            logging.error(f"Redis operation failed for {username}")
+            logger.error(f"Redis operation failed for {username}")
             raise e
         except Exception as e:
-            logging.error(
+            logger.error(
                 f"Failed to update conversation history for {username}: {e}"
             )
             raise e
