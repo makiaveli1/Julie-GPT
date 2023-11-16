@@ -195,38 +195,39 @@
   <div class="chatbox">
     <header class="sticky-top">Talk to JULIE:</header>
     <div id="chat-container">
-      {% for chat in chats %}
-      <div class="message user-message">
+      {% for message in chat_session.messages %}
+      <div
+        class="message {% if message.role == 'user' %}user-message{% else %}chatbot-message{% endif %}"
+      >
+        {% if message.role == 'user' %}
         <i class="fas fa-user avatar"></i>
-        <span class="message-text">{{ chat.message|escape }}</span>
-        <span class="timestamp">{{ chat.timestamp|date:"H:i" }}</span>
-      </div>
-      <div class="message chatbot-message">
+        {% else %}
         <img
           src="{% static 'images/julie.jpg' %}"
           alt="Julie"
           class="avatar chatbot-avatar"
         />
-        <span class="message-text">{{ chat.response|escape }}</span>
-        <span class="timestamp">{{ chat.timestamp|date:"H:i" }}</span>
+        {% endif %}
+        <span class="message-text">{{ message.message|escape }}</span>
+        <span class="timestamp">{{ message.timestamp }}</span>
       </div>
       {% endfor %}
     </div>
     <div class="input-container">
-      <form id="chat-form">
-        {% csrf_token %}
-        <input
-          name="message"
-          placeholder="Type a message..."
-          type="text"
-          class="form-control"
-        />
-        <button type="submit" class="btn btn-primary send-btn">
+      <form id="chat-form" class="form-inline">
+        <div class="form-group flex-grow-1 mr-2">
+          <input
+            name="message"
+            placeholder="Type a message..."
+            type="text"
+            class="form-control w-100"
+          />
+        </div>
+         <button type="submit" class="btn btn-primary send-btn">
           <i class="fas fa-paper-plane"></i>
-        </button>
+        </button> 
       </form>
     </div>
-
     <!-- Toast Container -->
     <div
       aria-live="polite"

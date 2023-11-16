@@ -1,73 +1,61 @@
 from .models import Chat, CustomUser
 from django.contrib.auth.decorators import login_required
-from django.core.files.storage import FileSystemStorage
 from django.http import JsonResponse, HttpResponseBadRequest
 from django.shortcuts import render, redirect
 from django.contrib import auth
 from django.utils import timezone
-from dotenv import load_dotenv
-import os
-import logging
 from .Juliebot import Juliebot
 from .brain import LongTermMemory
+from django.conf import settings
+import json
+import logging
 
 logger = logging.getLogger(__name__)
 
-load_dotenv('keys.env')
-
-redis_host = os.getenv("REDIS_HOST")
-redis_port = int(os.getenv("REDIS_PORT"))
-redis_username = os.getenv("REDIS_USER")
-redis_password = os.getenv("REDIS_PASS")
-
+# Initialize the Redis and Juliebot configurations outside the view function
+# Now pulling configuration from Django's settings
+redis_config = {
+    'host': settings.REDIS_HOST,
+    'port': settings.REDIS_PORT,
+    'username': settings.REDIS_USER,
+    'password': settings.REDIS_PASS
+}
+long_term_memory = LongTermMemory(redis_config)
+julie_bot = Juliebot(long_term_memory)
 
 
 @login_required
 def chatbot(request):
-    if not request.user.is_authenticated:
-        # Handle unauthenticated users
-        return redirect('login')  # Redirect to login page
-
-    # For GET requests, render the chatbot page with chat history
     if request.method == 'GET':
-        chats = Chat.objects.filter(user=request.user).order_by('-created_at')
-        return render(request, 'chatbot.html', {'chats': chats})
+        chat_session, created = Chat.objects.get_or_create(user=request.user)
+        return render(request, 'chatbot.html', {'chat_session': chat_session})
 
-    # For POST requests, process the chat message
     elif request.method == 'POST':
         user_input = request.POST.get('message')
-        logger.error(f"User input retrieved from POST request: '{user_input}'")
         username = request.user.username
 
-        # Validate user input
         if not user_input or not user_input.strip():
-            # Return a bad request response for invalid input
             return HttpResponseBadRequest("Invalid or empty message.")
 
         try:
-            # Initialize Juliebot and generate response
-            long_term_memory = LongTermMemory(redis_host, redis_port, redis_username, redis_password)
-            julie_bot = Juliebot(long_term_memory=long_term_memory)
-            julie_bot.start_conversation(username)
-            response = julie_bot.generate_response(username, user_input)
-            logger.error(f"Response generated from Juliebot: '{response}'")
+            julie_bot.send_message(user_input, username)
+            response = julie_bot.run_assistant(username)
 
-            # Save the chat to the database
-            Chat.objects.create(user=request.user, message=user_input, response=response, created_at=timezone.now())
-
+            chat_session = Chat.objects.get(user=request.user)
+            chat_history = chat_session.messages
+            timestamp = timezone.now().strftime("%Y-%m-%dT%H:%M:%S")
+            chat_history.append({'role': 'user', 'message': user_input, 'timestamp': timestamp})
+            chat_history.append({'role': 'assistant', 'message': response, 'timestamp': timestamp})
+            chat_session.messages = chat_history
+            chat_session.save()
         except Exception as e:
             logger.error(f"Error in generating chat response: {e}")
-            # Return a generic error message to the user
             return JsonResponse({'message': user_input, 'response': "Sorry, there was an error processing your request."})
 
-        # Return the JsonResponse with the message and response
         return JsonResponse({'message': user_input, 'response': response})
 
     else:
-        # Handle other HTTP methods
         return HttpResponseBadRequest("Unsupported request method.")
-
-
 
 def login(request):
     if request.method == 'POST':

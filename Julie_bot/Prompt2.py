@@ -84,4 +84,16 @@ class JulieModel(BaseModel):
                 formatted_fields[field_name] = value
         # Return a new instance of JulieModel with the formatted fields
         return JulieModel(**formatted_fields)
+    
+    def string_maker(self):
+        # Helper function to convert list to string or return the string as is
+        def stringify(value):
+            if isinstance(value, list):
+                return ', '.join(value)  # Join list items into a string
+            return value
+
+        # Use getattr to dynamically access each attribute and apply stringify
+        fields = [stringify(getattr(self, field)) for field in self.__fields__]
+
+        return ' '.join([str(field) for field in fields if field]) 
 

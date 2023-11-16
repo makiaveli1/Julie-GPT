@@ -1,103 +1,92 @@
-
 from sentence_transformers import SentenceTransformer
 import numpy as np
 import redis
 import json
 import logging
 from jsonschema import validate, ValidationError
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
 class LongTermMemory:
-    """
-    A singleton class that represents the long-term memory of the chatbot.
-    It uses Redis as the storage backend.
-    """
-
-    def __init__(self, host, port, username, password):
-        self.redis_host = host
-        self.redis_port = port
-        self.redis_username = username
-        self.redis_password = password
+    def __init__(self, config):
+        # Configuration is now pulled from Django's settings
+        self.redis_config = {
+            'HOST': settings.REDIS_HOST,
+            'PORT': settings.REDIS_PORT,
+            'USERNAME': settings.REDIS_USER,
+            'PASSWORD': settings.REDIS_PASS
+        }
+        self.initialize_model()
         self.initialize_redis()
         self.schema = {
             "type": "object",
             "properties": {"conversation_history": {"type": "array"}},
         }
 
+    def initialize_model(self):
+        # Initialize SentenceTransformer model only once for efficiency
+        self.model = SentenceTransformer('msmarco-distilbert-base-v4')
+
     def initialize_redis(self):
-        """
-        Initialize the Redis client and test the connection.
-        """
+        # Initialize Redis client with connection pooling
         self.redis_client = self.create_redis_client()
         self.test_connection()
 
     def create_redis_client(self):
-        return redis.Redis(
-            host=self.redis_host,
-            port=self.redis_port,
-            username=self.redis_username,
-            password=self.redis_password,
+        # Using connection pooling for Redis
+        pool = redis.ConnectionPool(
+            host=self.redis_config['HOST'],
+            port=self.redis_config['PORT'],
+            username=self.redis_config['USERNAME'],
+            password=self.redis_config['PASSWORD'],
             decode_responses=True,
-            socket_timeout=60,
+            socket_timeout=60
         )
+        return redis.Redis(connection_pool=pool)
 
     def test_connection(self):
         try:
             self.redis_client.ping()
-            logger.error(
-                f"Successfully connected to Redis at {self.redis_host}:{self.redis_port}."
-            )
+            logger.info(f"Successfully connected to Redis at {self.redis_config['HOST']}:{self.redis_config['PORT']}.")
         except redis.ConnectionError as e:
             logger.error("Could not connect to Redis. Connection failed.")
             raise e
         except redis.exceptions.AuthenticationError as e:
-            logger.error(
-                "Authentication failed: invalid username-password pair."
-            )
+            logger.error("Authentication failed: invalid username-password pair.")
             raise e
         except Exception as e:
             logger.error(f"Failed to connect to Redis: {e}")
             raise e
 
     def vectorize_text(self, text):
-        """
-        Convert text to vector using a machine learning model.
-        """
-        model = SentenceTransformer('msmarco-distilbert-base-v4')  # Example model
-
         if isinstance(text, str):
-            text = [text]  # Convert single string to a list
-
+            text = [text]
         if not all(isinstance(t, str) for t in text):
             logger.error(f"vectorize_text received invalid input: {text}")
             raise ValueError("Input text must be a string or a list of strings.")
-
-        return model.encode(text)
+        return self.model.encode(text)
 
     def store_vector(self, username, vector):
         if not isinstance(vector, (np.ndarray, list)):
             logger.error(f"Expected vector to be a numpy array or a list, got {type(vector)}")
             raise ValueError(f"Expected vector to be a numpy array or a list, got {type(vector)}")
-
         vector_list = vector if isinstance(vector, list) else vector.tolist()
-
         key = f"vec:{username}"
         try:
-            self.redis_client.execute_command('HSET', key, 'vector', json.dumps(vector_list))
-            logger.error(f"Stored vector for {username}")
+            self.redis_client.hset(key, 'vector', json.dumps(vector_list))
+            logger.info(f"Stored vector for {username}")
         except Exception as e:
             logger.error(f"Failed to store vector for {username}: {e}")
             raise e
 
     def search_similar_conversations(self, username, text):
         vector = self.vectorize_text(text)
-
         vector_list = vector.tolist() if isinstance(vector, np.ndarray) else vector
-
         try:
+            # Improved search using Redis Search commands
             results = self.redis_client.execute_command('FT.SEARCH', f'idx:{username}', f'@vector:[{",".join(map(str, vector_list))}]')
-            logger.error(f"Search results: {results}")
+            logger.info(f"Search results: {results}")
             return results
         except Exception as e:
             logger.error(f"Failed to search for similar conversations for {username}: {e}")
@@ -131,7 +120,7 @@ class LongTermMemory:
         try:
             validate(instance=user_data, schema=self.schema)
             self.redis_client.set(username, json.dumps(user_data))
-            logger.error(f"Saved user data for {username}")
+            logger.info(f"Saved user data for {username}")
         except redis.exceptions.RedisError as e:
             logger.error(f"Redis operation failed for {username}")
             raise e
@@ -144,17 +133,13 @@ class LongTermMemory:
         value = json.dumps({"role": role, "content": content})
         try:
             self.redis_client.lpush(key, value)
-            logger.error(
-                f"Added message to conversation history for {username}"
-            )
-
+            logger.info(f"Added message to conversation history for {username}")
+            # Trimming the list to maintain manageable size
             self.redis_client.ltrim(key, 0, 5000)
-            logger.error(f"Trimmed conversation history for {username}")
+            logger.info(f"Trimmed conversation history for {username}")
         except redis.exceptions.RedisError as e:
             logger.error(f"Redis operation failed for {username}")
             raise e
         except Exception as e:
-            logger.error(
-                f"Failed to update conversation history for {username}: {e}"
-            )
+            logger.error(f"Failed to update conversation history for {username}: {e}")
             raise e
