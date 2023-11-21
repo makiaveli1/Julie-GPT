@@ -12,7 +12,9 @@ from Prompt import julie_description
 load_dotenv('keys.env')
 client = openai.OpenAI()
 
-logging.basicConfig(filename='juliebot.log', level=logging.INFO, format='%(asctime)s:%(levelname)s:%(message)s')
+logging.basicConfig(filename='juliebot.log', level=logging.INFO,
+                    format='%(asctime)s:%(levelname)s:%(message)s')
+
 
 class Juliebot:
     def __init__(self, long_term_memory: LongTermMemory):

@@ -5,4 +5,8 @@ from .models import Chat
 
 # Register your models here.
 admin.site.register(Chat)
-admin.site.register(CustomUser, UserAdmin)
+
+class CustomUserAdmin(admin.ModelAdmin):
+    list_display = ['username', 'email', 'phone', 'bio', 'profile_picture']
+
+admin.site.register(CustomUser, CustomUserAdmin)

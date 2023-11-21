@@ -4,6 +4,7 @@ from django.http import JsonResponse, HttpResponseBadRequest
 from django.shortcuts import render, redirect
 from django.contrib import auth
 from django.utils import timezone
+from cloudinary.uploader import upload
 from .Juliebot import Juliebot
 from .brain import LongTermMemory
 from django.conf import settings
@@ -44,18 +45,23 @@ def chatbot(request):
             chat_session = Chat.objects.get(user=request.user)
             chat_history = chat_session.messages
             timestamp = timezone.now().strftime("%Y-%m-%dT%H:%M:%S")
-            chat_history.append({'role': 'user', 'message': user_input, 'timestamp': timestamp})
-            chat_history.append({'role': 'assistant', 'message': response, 'timestamp': timestamp})
+            chat_history.append({'role': 'user', 'message': user_input,
+                                 'timestamp': timestamp})
+            chat_history.append({'role': 'assistant', 'message': response,
+                                 'timestamp': timestamp})
             chat_session.messages = chat_history
             chat_session.save()
         except Exception as e:
             logger.error(f"Error in generating chat response: {e}")
-            return JsonResponse({'message': user_input, 'response': "Sorry, there was an error processing your request."})
+            return JsonResponse({'message': user_input, 'response':
+                                 """Sorry, there was an error processing
+                                 your request."""})
 
         return JsonResponse({'message': user_input, 'response': response})
 
     else:
         return HttpResponseBadRequest("Unsupported request method.")
+
 
 def login(request):
     if request.method == 'POST':
@@ -80,7 +86,8 @@ def register(request):
         password2 = request.POST['password2']
         if password1 == password2:
             try:
-                user = CustomUser.objects.create_user(username, email, password1)
+                user = CustomUser.objects.create_user(username, email,
+                                                      password1, bio)
                 user.save()
                 auth.login(request, user)
                 return redirect('chatbot')
@@ -96,37 +103,78 @@ def register(request):
 @login_required
 def update_profile(request):
     if request.method == 'POST':
-        # Get the custom user's profile
         user = request.user
 
-        # Update the user's name, email, and other fields
-        user.first_name = request.POST.get('full_name', user.first_name)
-        user.email = request.POST.get('email', user.email)
+        # Update basic profile information only if new value is provided
+        full_name = request.POST.get('full_name')
+        if full_name is not None:
+            user.first_name = full_name
 
-        # Only update the password if it's provided
-        if 'password' in request.POST and request.POST['password']:
-            user.set_password(request.POST['password'])
+        last_name = request.POST.get('last_name')
+        if last_name is not None:
+            user.last_name = last_name
 
-        # Assume additional fields like phone, bio, social_media are part of the User model
-        # This requires custom user model which extends the built-in User model
-        user.phone = request.POST.get('phone', user.phone)
-        user.bio = request.POST.get('bio', user.bio)
-        user.social_media = request.POST.get('social_media', user.social_media)
+        username = request.POST.get('user_name')
+        if username is not None:
+            user.username = username
 
-        # Handle the profile picture upload
+        email = request.POST.get('email')
+        if email is not None:
+            user.email = email
+
+        phone = request.POST.get('phone')
+        if phone is not None:
+            user.phone = phone
+
+        bio = request.POST.get('bio')
+        if bio is not None:
+            user.bio = bio
+
+        # Handle profile picture upload
         if 'profile_picture' in request.FILES:
-            file = request.FILES['profile_picture']
-            fs = FileSystemStorage()
-            filename = fs.save(file.name, file)
-            user.profile_picture = fs.url(filename)
+            try:
+                uploaded_file = request.FILES['profile_picture']
+                # Make sure the 'upload' function works correctly
+                upload_result = upload(uploaded_file)
+                user.profile_picture_url = upload_result.get('url')
+            except Exception as e:
+                # Handle exceptions that may occur during file upload
+                return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 
+        # Save the user model after making changes
         user.save()
 
-        # Return a success response
+        # Respond with success message
         return JsonResponse({'status': 'success', 'message': 'Profile updated successfully.'})
     else:
-        # If it's not a POST request, return an error response
-        return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
+        # Handle incorrect request method
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
+
+
+@login_required
+def get_profile_data(request):
+    if request.method != 'GET':
+        return HttpResponseBadRequest("Invalid request method.")
+
+    user = request.user
+    # Assuming you have a method or a field in CustomUser for profile picture URL
+    profile_picture_url = getattr(user, 'profile_picture_url', None)
+
+    # Construct full name manually if get_full_name() doesn't give desired results
+    full_name = user.get_full_name() or f"{user.first_name} {user.last_name}".strip()
+
+    profile_data = {
+        'status': 'success',
+        'full_name': full_name,
+        'username': user.username,
+        'email': user.email,
+        'phone': user.phone or '',
+        'bio': user.bio or '',
+        'social_media': getattr(user, 'social_media', ''),
+        'profile_picture': profile_picture_url
+    }
+
+    return JsonResponse(profile_data)
 
 
 def logout(request):
