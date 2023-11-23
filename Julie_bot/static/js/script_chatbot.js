@@ -1,22 +1,44 @@
 $(document).ready(function () {
   $(".edit-btn").on("click", function () {
     let field = $(this).data("field");
-    field = field.replace("user_name", "user-name"); // Specific replacement for the username case
-    const displaySelector = `#display-${field}`;
-    const inputSelector = `#user-${field.replace("user-", "")}`; // Remove the extra 'user-' prefix
 
-    // Toggle visibility
-    if ($(displaySelector).css("display") !== "none") {
-      // Populate the input field with the current profile data
-      $(inputSelector).val($(displaySelector).text());
+    // For full name, handle first and last name fields separately
+    if (field === "full-name") {
+      let displaySelector = "#display-" + field;
+      let firstNameInput = "#user-first-name";
+      let lastNameInput = "#user-last-name";
 
-      // Hide the display element and show the input element
-      $(displaySelector).css("display", "none");
-      $(inputSelector).css("display", "block");
+      console.log("Display selector:", displaySelector);
+      console.log("First name input selector:", firstNameInput);
+      console.log("Last name input selector:", lastNameInput);
+
+      // Toggle visibility of the display and input elements
+      $(displaySelector).toggleClass("hidden");
+      $(firstNameInput).toggleClass("hidden");
+      $(lastNameInput).toggleClass("hidden");
+
+      // Populate the input fields with the current profile data if they're becoming visible
+      if (
+        !$(firstNameInput).hasClass("hidden") &&
+        !$(lastNameInput).hasClass("hidden")
+      ) {
+        let fullNameParts = $(displaySelector).text().trim().split(" ");
+        $(firstNameInput).val(fullNameParts[0]);
+        if (fullNameParts.length > 1) {
+          $(lastNameInput).val(fullNameParts.slice(1).join(" "));
+        }
+      }
     } else {
-      // Hide the input element and show the display element
-      $(displaySelector).css("display", "block");
-      $(inputSelector).css("display", "none");
+      // Handle other fields normally
+      let displaySelector = `#display-${field}`;
+      let inputSelector = `#user-${field}`;
+
+      $(displaySelector).toggleClass("hidden");
+      $(inputSelector).toggleClass("hidden");
+
+      if (!$(inputSelector).hasClass("hidden")) {
+        $(inputSelector).val($(displaySelector).text().trim());
+      }
     }
   });
   const chatContainer = $("#chat-container");
@@ -69,11 +91,19 @@ $(document).ready(function () {
         dataType: "json",
         success: function (data) {
           $("#display-full-name").text(data.full_name);
-          $("#display-user-name").text(data.username || "[No username]");
+          $("#display-username").text(data.username || "[No username]");
           $("#display-email").text(data.email);
           // Set other profile data
           $("#display-phone").text(data.phone);
           $("#display-bio").text(data.bio);
+
+          // Split full name into first and last names for editing
+          let fullNameParts = data.full_name.split(" ");
+          $("#user-first-name").val(fullNameParts[0]); // Set first name
+          if (fullNameParts.length > 1) {
+            $("#user-last-name").val(fullNameParts.slice(1).join(" ")); // Set last name
+          }
+
           // Update profile picture, append a timestamp to the URL to prevent caching
           var imageUrl = data.profile_picture;
           if (imageUrl) {
@@ -133,7 +163,8 @@ $(document).ready(function () {
         let formData = new FormData(this);
         // Append editable fields data
         $(".edit-input").each(function () {
-          if (!$(this).hasClass("d-none")) {
+          if (!$(this).hasClass("hidden")) {
+            // Changed from 'd-none' to 'hidden'
             formData.append(this.name, $(this).val());
           }
         });
@@ -147,6 +178,13 @@ $(document).ready(function () {
     }
   });
 
+  function updateChatboxAvatar(newAvatarUrl) {
+    // Update the user avatar in the chatbox
+    $(".fa-user.avatar").replaceWith(
+      `<img src="${newAvatarUrl}" alt="User" class="avatar" />`
+    );
+  }
+
   // Submit profile form to server
   function submitProfileForm(formData) {
     try {
@@ -159,6 +197,10 @@ $(document).ready(function () {
         dataType: "json",
         success: function (data) {
           if (data.status === "success") {
+            if (data.profile_picture_url) {
+              currentUserProfilePicUrl = data.profile_picture_url;
+              updateChatboxAvatar(data.profile_picture_url);
+            }
             setTimeout(function () {
               $profileModal.modal("hide");
               $(".modal-backdrop").remove();
@@ -210,12 +252,59 @@ $(document).ready(function () {
     );
   }
 
-  // Helper functions for chat UI
-  function appendMessage(className, text, isHtml) {
-    const messageDiv = $("<div>").addClass("message " + className);
-    isHtml ? messageDiv.html(text) : messageDiv.text(text);
-    chatContainer.append(messageDiv);
+  function appendMessage(className, text, isHtml, messageId) {
+    // Check if this message ID is already in the chat
+    if ($("#" + messageId).length > 0) {
+      // This message is already in the chat, so don't append it again
+      return;
+    }
+
+    // Create a new div element for the message with the message ID
+    const messageDiv = $("<div>")
+      .addClass("message " + className)
+      .attr("id", messageId);
+
+    // Decide which avatar to use based on the message class
+    let avatarImg;
+    if (className.includes("user-message")) {
+      avatarImg = $("<img>", {
+        src: currentUserProfilePicUrl, // This variable should hold the user's avatar URL
+        alt: "User",
+        class: "avatar",
+      });
+    } else if (className.includes("chatbot-message")) {
+      avatarImg = $("<img>", {
+        src: chatbotAvatarUrl, // This variable should hold the chatbot's avatar URL
+        alt: "Chatbot",
+        class: "avatar chatbot-avatar",
+      });
+    } else {
+      // If the message does not belong to the user or chatbot, use a default avatar
+      avatarImg = $("<img>", {
+        src: "/path/to/default/avatar.png", // Replace with the path to a default avatar image
+        alt: "Avatar",
+        class: "avatar",
+      });
+    }
+
+    // Append the avatar to the message div
+    messageDiv.append(avatarImg);
+
+    // Create a span element for the message text
+    const messageTextSpan = $("<span>").addClass("message-text");
+    // Append the message text as HTML or text based on the isHtml flag
+    isHtml ? messageTextSpan.html(text) : messageTextSpan.text(text);
+
+    // Append the message text span to the message div
+    messageDiv.append(messageTextSpan);
+
+    // Append the message div to the chat container
+    $("#chat-container").append(messageDiv);
+
+    // Animate the message div to fade in
     messageDiv.css({ opacity: 0 }).animate({ opacity: 1 }, 500);
+
+    // Scroll the chat container to the bottom to show the new message
     scrollToBottom();
   }
 
@@ -243,7 +332,7 @@ $(document).ready(function () {
     const messageInput = $('input[name="message"]');
     let messageText = messageInput.val().trim();
     if (messageText === "") return;
-    appendMessage("user-message", `You: ${messageText}`);
+    appendMessage("user-message", `${messageText}`);
     messageInput.val("");
     setTimeout(() => {
       sendMessage(messageText);

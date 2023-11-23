@@ -18,54 +18,58 @@
           <div class="modal-body">
             <form id="profile-form">
               <!-- Profile Picture Display -->
-              <div class="form-group">
-                <label for="profile-picture"></label>
-                <img id="current-profile-picture" src="" alt="Profile Picture" class="img-fluid" style="max-width: 100px; height: auto;" />
+              <div class="profile-picture-container">
+                <img id="current-profile-picture" src="" alt="Profile Picture" class="img-fluid profile-picture" />
               </div>
-              <!-- Full Name -->
-              <div class="form-group d-flex justify-content-between align-items-center">
+              <!-- Full Name Display and Edit -->
+              <div class="form-group justify-content-between">
+                <!-- Display Full Name -->
                 <div>
                   <label>Full Name:</label>
-                  <p id="display-full-name" class="mb-0">[Full Name Here]</p>
-                  <input type="text" id="user-full-name" name="full_name" class="form-control edit-input hidden" />
+                  <p id="display-full-name" class="profile-info mb-0">[Full Name Here]</p>
                 </div>
-                <button type="button" class="btn btn-outline-primary btn-sm edit-btn" data-field="full-name"><i class="fas fa-pencil-alt"></i></button>
-              </div>
-              <!-- Username -->
-              <div class="form-group d-flex justify-content-between align-items-center">
-                <div>
-                  <label>Username:</label>
-                  <p id="display-user-name" class="mb-0">[Username Here]</p>
-                  <input type="text" id="user-name" name="user_name" class="form-control edit-input hidden" />
+                <!-- Edit Full Name -->
+                <div class="flex-shrink-1">
+                  <!-- First Name Input -->
+                  <input type="text" id="user-first-name" name="first_name" class="form-control edit-input hidden" placeholder="First Name" />
+                  <!-- Last Name Input -->
+                  <input type="text" id="user-last-name" name="last_name" class="form-control edit-input hidden" placeholder="Last Name" />
+                  <!-- Edit Button -->
+                  <button type="button" class="btn btn-outline-primary btn-sm edit-btn" data-field="full-name"><i class="fas fa-pencil-alt"></i>Edit</button>
                 </div>
-                <button type="button" class="btn btn-outline-primary btn-sm edit-btn" data-field="user-name"><i class="fas fa-pencil-alt"></i></button>
               </div>
               <!-- Email -->
-              <div class="form-group d-flex justify-content-between align-items-center">
+              <div class="form-group justify-content-between">
                 <div>
-                  <label>Email:</label>
-                  <p id="display-email" class="mb-0"></p>
-                  <input type="email" id="user-email" name="email" class="form-control edit-input hidden" />
+                  <label for="user-email">Email:</label>
+                  <p id="display-email" class="profile-info mb-0"></p>
                 </div>
-                <button type="button" class="btn btn-outline-primary btn-sm edit-btn" data-field="email"><i class="fas fa-pencil-alt"></i></button>
+                <div class="flex-shrink-1">
+                  <input type="email" id="user-email" name="email" class="form-control edit-input hidden" />
+                  <button type="button" class="btn btn-outline-primary btn-sm edit-btn" data-field="email"><i class="fas fa-pencil-alt"></i>Edit</button>
+                </div>
               </div>
               <!-- Phone Number -->
-              <div class="form-group d-flex justify-content-between align-items-center">
+              <div class="form-group justify-content-between">
                 <div>
-                  <label>Phone Number:</label>
-                  <p id="display-phone" class="mb-0"></p>
-                  <input type="tel" id="user-phone" name="phone" class="form-control edit-input hidden" />
+                  <label for="user-phone">Phone Number:</label>
+                  <p id="display-phone" class="profile-info mb-0"></p>
                 </div>
-                <button type="button" class="btn btn-outline-primary btn-sm edit-btn" data-field="phone"><i class="fas fa-pencil-alt"></i></button>
+                <div class="flex-shrink-1">
+                  <input type="tel" id="user-phone" name="phone" class="form-control edit-input hidden" />
+                  <button type="button" class="btn btn-outline-primary btn-sm edit-btn" data-field="phone"><i class="fas fa-pencil-alt"></i>Edit</button>
+                </div>
               </div>
               <!-- Bio -->
-              <div class="form-group d-flex justify-content-between align-items-center">
+              <div class="form-group justify-content-between">
                 <div>
-                  <label>Bio:</label>
-                  <p id="display-bio" class="mb-0"></p>
-                  <textarea id="user-bio" name="bio" class="form-control edit-input hidden"></textarea>
+                  <label for="user-bio">Bio:</label>
+                  <p id="display-bio" class="profile-info mb-0"></p>
                 </div>
-                <button type="button" class="btn btn-outline-primary btn-sm edit-btn" data-field="bio"><i class="fas fa-pencil-alt"></i></button>
+                <div class="flex-shrink-1">
+                  <textarea id="user-bio" name="bio" class="form-control edit-input hidden"></textarea>
+                  <button type="button" class="btn btn-outline-primary btn-sm edit-btn" data-field="bio"><i class="fas fa-pencil-alt"></i>Edit</button>
+                </div>
               </div>
               <!-- Profile Picture Input -->
               <div class="form-group">
@@ -97,9 +101,15 @@
       <header class="sticky-top">Talk to JULIE:</header>
       <div id="chat-container">
         {% for message in chat_session.messages %}
-          <div class="message {% if message.role == 'user' %}{% endif %}">
+          <div class="message {% if message.role == 'user' %}
+
+            {% endif %}">
             {% if message.role == 'user' %}
-              <i class="fas fa-user avatar"></i>
+              {% if request.user.profile_picture_url %}
+                <img src="{{ request.user.profile_picture_url }}" alt="User" class="avatar" />
+              {% else %}
+                <i class="fas fa-user avatar"></i>
+              {% endif %}
             {% else %}
               <img src="{% static 'images/julie.jpg' %}" alt="Julie" class="avatar chatbot-avatar" />
             {% endif %}
@@ -122,6 +132,11 @@
       </div>
     </div>
   </div>
+  <!-- At the end of your HTML before the script tags -->
+  <script type="text/javascript">
+    let chatbotAvatarUrl = "{% static 'images/julie.jpg' %}"
+    let currentUserProfilePicUrl = "{{ request.user.profile_picture_url|default:'/path/to/default/profile/image.png' }}"
+  </script>
 {% endblock %}
 {% block scripts %}
   <div class="container">

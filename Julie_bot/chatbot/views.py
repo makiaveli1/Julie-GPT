@@ -4,11 +4,12 @@ from django.http import JsonResponse, HttpResponseBadRequest
 from django.shortcuts import render, redirect
 from django.contrib import auth
 from django.utils import timezone
+from django.db import transaction
 from cloudinary.uploader import upload
 from .Juliebot import Juliebot
 from .brain import LongTermMemory
 from django.conf import settings
-import json
+import uuid
 import logging
 
 logger = logging.getLogger(__name__)
@@ -23,6 +24,7 @@ redis_config = {
 }
 long_term_memory = LongTermMemory(redis_config)
 julie_bot = Juliebot(long_term_memory)
+
 
 
 @login_required
@@ -42,24 +44,51 @@ def chatbot(request):
             julie_bot.send_message(user_input, username)
             response = julie_bot.run_assistant(username)
 
-            chat_session = Chat.objects.get(user=request.user)
-            chat_history = chat_session.messages
-            timestamp = timezone.now().strftime("%Y-%m-%dT%H:%M:%S")
-            chat_history.append({'role': 'user', 'message': user_input,
-                                 'timestamp': timestamp})
-            chat_history.append({'role': 'assistant', 'message': response,
-                                 'timestamp': timestamp})
-            chat_session.messages = chat_history
-            chat_session.save()
-        except Exception as e:
-            logger.error(f"Error in generating chat response: {e}")
-            return JsonResponse({'message': user_input, 'response':
-                                 """Sorry, there was an error processing
-                                 your request."""})
+            # Start a new transaction
+            with transaction.atomic():
+                # Lock the chat session for update to prevent race conditions
+                chat_session = Chat.objects.select_for_update().get(user=request.user)
+                chat_history = chat_session.messages
+                timestamp = timezone.now().isoformat()
 
-        return JsonResponse({'message': user_input, 'response': response})
+                # Create unique IDs for the messages
+                user_message_id = uuid.uuid4().hex
+                bot_message_id = uuid.uuid4().hex
+
+                # Construct the user and bot messages
+                user_message = {'role': 'user', 'message': user_input,
+                                'timestamp': timestamp, 'id': user_message_id}
+                bot_message = {'role': 'assistant', 'message': response,
+                               'timestamp': timestamp, 'id': bot_message_id}
+
+                # Append messages to the chat history
+                # if they're not already present
+                if user_message not in chat_history:
+                    chat_history.append(user_message)
+                if bot_message not in chat_history:
+                    chat_history.append(bot_message)
+
+                # Save the chat session after appending new messages
+                chat_session.messages = chat_history
+                chat_session.save()
+
+        except Exception as e:
+            # Log the exception and return an error response
+            logger.error(f"Error in generating chat response: {e}")
+            return JsonResponse({
+                'status': 'error',
+                'message': "Sorry, there was an error processing your request."
+            })
+
+        # Return a successful JsonResponse with the user's message and the bot's response
+        return JsonResponse({
+            'status': 'success',
+            'user_message': user_input,
+            'bot_response': response
+        })
 
     else:
+        # Return an error response for unsupported request methods
         return HttpResponseBadRequest("Unsupported request method.")
 
 
@@ -106,14 +135,12 @@ def update_profile(request):
         user = request.user
 
         # Update basic profile information only if new value is provided
-        full_name = request.POST.get('full_name')
-        if full_name is not None:
-            user.first_name = full_name
-
+        first_name = request.POST.get('first_name')
         last_name = request.POST.get('last_name')
+        if first_name is not None:
+            user.first_name = first_name
         if last_name is not None:
             user.last_name = last_name
-
         username = request.POST.get('user_name')
         if username is not None:
             user.username = username
@@ -139,16 +166,19 @@ def update_profile(request):
                 user.profile_picture_url = upload_result.get('url')
             except Exception as e:
                 # Handle exceptions that may occur during file upload
-                return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+                return JsonResponse({'status': 'error',
+                                     'message': str(e)}, status=400)
 
         # Save the user model after making changes
         user.save()
 
         # Respond with success message
-        return JsonResponse({'status': 'success', 'message': 'Profile updated successfully.'})
+        return JsonResponse({'status': 'success',
+                             'message': 'Profile updated successfully.'})
     else:
         # Handle incorrect request method
-        return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
+        return JsonResponse({'status': 'error',
+                             'message': 'Invalid request method'}, status=400)
 
 
 @login_required

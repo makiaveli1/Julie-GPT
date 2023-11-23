@@ -217,10 +217,10 @@ body {
 
 .modal-body {
   padding: 2rem;
+  display: block;
 }
 
 .form-control {
-  color: #fff;
   border: 1px solid #444; 
   border-radius: 0.25rem; 
 }
@@ -240,8 +240,9 @@ body {
   border-bottom: 1rem;
 }
 
-.edit-input {
-  display: block;
+
+label, p.mb-0, .edit-input {
+  width: 100%; /* Full width */
 }
 
 .btn-outline-primary {
@@ -266,9 +267,11 @@ body {
 
 
 .edit-btn {
+  display: block; 
   background-color: transparent;
   border: none;
-  color: #fff; /* White icon color for better visibility */
+  color: #fff;
+  margin-top: 0.5rem;
 }
 
 .edit-btn:hover {
@@ -298,7 +301,28 @@ input[type="file"]::file-selector-button:hover {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  z-index: 1050; /* Higher than other elements but lower than modals */
+  z-index: 1050;  
+}
+
+
+.profile-picture-container {
+  display: flex;
+  justify-content: center; /* Center horizontally in the flex container */
+  margin-bottom: 20px; /* Space below the profile picture */
+}
+
+/* Styles for the profile picture itself */
+.profile-picture {
+  max-width: 100px; /* Maximum width of the image */
+  height: auto; /* Maintain the aspect ratio of the image */
+  border-radius: 50%; /* Optional: if you want the image to be round */
+}
+
+/* Profile picture styling */
+#current-profile-picture {
+  max-width: 100px; 
+  height: auto; 
+  border-radius: 50%; 
 }
 
 .hidden {
