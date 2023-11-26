@@ -10,10 +10,8 @@ from cloudinary.uploader import upload
 from .Juliebot import Juliebot
 from .brain import LongTermMemory
 from django.conf import settings
-from django.utils.formats import date_format
 import uuid
 import logging
-import hashlib
 
 logger = logging.getLogger(__name__)
 
@@ -114,17 +112,35 @@ def chatbot_message_sent(request):
 
 def login(request):
     if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+
+        # Check if either field is empty and return an appropriate message
+        if not username or not password:
+            error_message = 'Username and password cannot be empty.'
+            return JsonResponse({"error": error_message}, status=400)
+
         user = auth.authenticate(username=username, password=password)
+
         if user is not None:
-            auth.login(request, user)
-            return redirect('chatbot')
+            if user.is_active:
+                auth.login(request, user)
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({"success": True})
+                return redirect('chatbot')
+            else:
+                error_message = 'Your account has been disabled. So sad.'
         else:
-            error_message = 'Invalid username or password'
-            return render(request, 'login.html', {'error': error_message})
-    else:
-        return render(request, 'login.html')
+            error_message = 'Invalid username or password. Please try again.'
+
+        # Handle AJAX and non-AJAX requests differently
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({"error": error_message}, status=400)
+        else:
+            messages.error(request, error_message)
+
+    return render(request, 'login.html')
+
 
 
 def register(request):
@@ -214,7 +230,8 @@ def get_profile_data(request):
 
     # Construct full name manually if
     # get_full_name() doesn't give desired results
-    full_name = user.get_full_name() or f"{user.first_name} {user.last_name}".strip()
+    full_name = user.get_full_name() or f"""{user.first_name} {
+        user.last_name}""".strip()
 
     profile_data = {
         'status': 'success',
@@ -232,10 +249,12 @@ def get_profile_data(request):
 
 @login_required
 def delete_account(request):
-    user = request.user
-    user.delete()
-    messages.success(request, 'Your account has been deleted.')
-    return redirect('login')
+    if request.method == 'POST':
+        user = request.user
+        user.delete()
+        messages.success(request, 'Your account has been deleted.')
+        return redirect('login')
+    return HttpResponseBadRequest("Invalid request method.")
 
 
 def logout(request):

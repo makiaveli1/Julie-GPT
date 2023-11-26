@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from pathlib import Path
 import os
 import dj_database_url
+from django.contrib.messages import constants as messages
 from dotenv import load_dotenv
 
 
@@ -175,4 +176,9 @@ LOGGING = {
             'propagate': True,
         },
     },
+}
+
+
+MESSAGE_TAGS = {
+    messages.ERROR: 'danger',
 }

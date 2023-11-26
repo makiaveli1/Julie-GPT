@@ -2,7 +2,79 @@ document.addEventListener("DOMContentLoaded", function () {
   var loginModal = document.getElementById("loginModal");
   var loginButton = document.getElementById("loginButton");
   var closeButton = document.querySelector(".close-button");
+  var loginForm = document.getElementById("login-form");
+  var loginErrorDiv = document.getElementById("login-error");
 
+  // Modal button event listeners
+  loginButton.onclick = function () {
+    loginModal.style.display = "block";
+  };
+
+  closeButton.onclick = function () {
+    loginModal.style.display = "none";
+  };
+
+  window.onclick = function (event) {
+    if (event.target == loginModal) {
+      loginModal.style.display = "none";
+    }
+  };
+
+  // Utility function to show error messages
+  function showError(message) {
+    loginErrorDiv.textContent = message;
+    loginErrorDiv.style.display = "block";
+  }
+
+  // Form submission event listener
+  loginForm.onsubmit = function (event) {
+    event.preventDefault(); // Prevent the default form submission behavior
+
+    // Clear any previous error messages
+    loginErrorDiv.style.display = "none";
+    loginErrorDiv.textContent = "";
+
+    var username = document.getElementById("username").value;
+    var password = document.getElementById("password").value;
+
+    // Validate inputs
+    if (!username || !password) {
+      showError("Username and password cannot be empty.");
+      return; // Exit the function if validation fails
+    }
+
+    // Prepare the AJAX request
+    var formData = new FormData(loginForm);
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", loginForm.action, true);
+    xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest"); // Indicate that this is an AJAX request
+    xhr.setRequestHeader("X-CSRFToken", formData.get("csrfmiddlewaretoken")); // Set CSRF Token
+
+    // Define what happens on successful data submission
+    xhr.onload = function () {
+      if (xhr.status === 200) {
+        var response = JSON.parse(xhr.responseText);
+        if (response.success) {
+          window.location.href = "/chatbot"; // Redirect to chatbot page if successful
+        }
+      } else if (xhr.status === 400) {
+        // If the status code is 400, it's a client-side error, display the error message
+        var errorResponse = JSON.parse(xhr.responseText);
+        showError(errorResponse.error);
+      } else {
+        // If another status code is returned, display a generic error message
+        showError("An error occurred. Please try again.");
+      }
+    };
+
+    // Define what happens in case of an error
+    xhr.onerror = function () {
+      showError("Network error: Could not connect to server."); // Display a network error
+    };
+
+    // Send the form data
+    xhr.send(formData);
+  };
   loginButton.onclick = function () {
     loginModal.style.display = "block";
   };

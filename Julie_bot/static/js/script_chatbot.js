@@ -357,7 +357,7 @@ $(document).ready(function () {
 
     $.ajax({
       type: "POST",
-      url: "",
+      url: 'chatbot/',
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
         "X-CSRFToken": getCookie("csrftoken"), // Ensure you're getting the CSRF token correctly
@@ -425,24 +425,27 @@ $(document).ready(function () {
 
   // Initial connection status update
   updateConnectionStatus();
+
+  // Get the delete confirmation button from the confirmation modal
   var confirmDeleteBtn = document.getElementById("confirm-delete-btn");
   confirmDeleteBtn.addEventListener("click", function () {
-    var deleteUrl = this.getAttribute("data-delete-url"); // Get the delete URL
-    var csrfToken = this.getAttribute("data-csrf-token"); // Get the CSRF token
+    // Get the CSRF token from a cookie or another source like a meta tag
+    var csrfToken = getCookie("csrftoken"); // Assuming you have a 'getCookie' function defined
 
+    // Perform the AJAX request to delete the account
     $.ajax({
-      url: deleteUrl,
-      method: "POST",
+      url: "/delete-account/",
+      type: "post",
       data: {
         csrfmiddlewaretoken: csrfToken,
       },
       success: function (response) {
-        // Redirect to the login page after deletion
-        window.location.href = "/login/"; // Change this to the correct URL if needed
+        // Redirect to the login page after successful deletion
+        window.location.href = "/login/";
       },
       error: function (xhr, textStatus, errorThrown) {
-        // Handle errors here
-        console.error("Error deleting account: ", textStatus, errorThrown);
+        // Handle errors here, for example, by showing an error message to the user
+        console.error("Error occurred: " + textStatus, errorThrown);
       },
     });
   });

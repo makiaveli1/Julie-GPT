@@ -1,8 +1,11 @@
 from django.urls import path
+from django.shortcuts import redirect
+from . import views
 from .import views
 
 urlpatterns = [
-    path('', views.chatbot, name='chatbot'),
+    path('', lambda request: redirect('chatbot', permanent=False)),
+    path('chatbot/', views.chatbot, name='chatbot'),
     path('login/', views.login, name='login'),
     path('register/', views.register, name='register'),
     path('logout/', views.logout, name='logout'),

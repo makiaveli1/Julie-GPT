@@ -84,7 +84,7 @@
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
             <button type="submit" form="profile-form" class="btn btn-primary">Save changes</button>
-            <button type="button" class="btn btn-danger" id="confirm-delete-btn" data-delete-url="{% url 'delete_account' %}" data-csrf-token="{{ csrf_token }}">Delete</button>
+            <button type="button" class="btn btn-danger" id="delete-account-btn" data-toggle="modal" data-target="#confirmDeleteModal">Delete Profile</button>
           </div>
         </div>
       </div>
