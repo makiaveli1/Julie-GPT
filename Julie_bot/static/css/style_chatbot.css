@@ -18,15 +18,14 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(to right, #bdc3c7, #2c3e50);
+  background-image: linear-gradient(to right, #e4b692, #cb8374);
   animation: GradientShift 15s ease infinite;
   overflow: hidden;
 }
 
 .chatbox {
   position: relative;
-  left: 23%;
-  width: 50%;
+  width: 100%;
   height: 100vh;
   max-height: calc(105vh - 6rem);
   background: var(--chatbox-bg-color);
@@ -38,7 +37,7 @@ body {
 }
 
 .chatbox header {
-  background: linear-gradient(to right, #676c6e, #2c3e50);
+  background-image: linear-gradient(to right, #c4763b, #8f3e2e);
   color: #FFFFFF;
   padding: 1rem;
   animation: GradientShift 15s ease infinite;
@@ -81,13 +80,6 @@ body {
   outline: none;
 }
 
-.btn-lg {
-  padding: 0.5rem 1rem;
-  font-size: 1.25rem;
-  line-height: 1.5;
-  border-radius: 0.3rem;
-}
-
 .message {
   display: flex;
   align-items: flex-start;
@@ -111,11 +103,6 @@ body {
   height: 2rem;
 }
 
-.sender-name {
-  font-weight: bold;
-  flex-shrink: 0;
-}
-
 .message-text {
   flex-grow: 1;
   text-rendering: optimizeLegibility;
@@ -135,6 +122,22 @@ body {
   font-size: 2em;
 }
 
+.username-display-container {
+  text-align: center;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.username-display {
+  display: inline-block;
+  font-size: 1.0rem; 
+  color: #352323; 
+  font-weight: bold; 
+  padding: 0.5rem;
+  border-radius: 0.5rem; 
+  box-shadow: 0 0.5rem 0.5rem rgba(54, 50, 50, 0.1);
+}
+
 .chatbot-avatar {
   width: 2rem;
   height: 2rem;
@@ -144,7 +147,7 @@ body {
 .input-container {
   align-items: center;
   padding: 0.2rem;
-  background: linear-gradient(to right, #f5f3f3, #2c3e50);
+  background-image: linear-gradient(to right, #c4763b, #8f3e2e);
   box-shadow: 0 4rem 6rem rgba(50, 50, 93, 0.11), 0 1rem 3rem rgba(0, 0, 0, 0.08);
   transition: box-shadow 0.3s ease-in-out;
 }
@@ -169,12 +172,11 @@ body {
 .input-container button {
   padding: 1rem;
   border: none;
-  background: #34495e;
+  background-image: linear-gradient(to right, #b36e39, #94584b);
   color: #FFFFFF;
   cursor: pointer;
   transition: background-color 0.3s;
   outline: none;
-  box-sizing: border-box; 
 }
 
 .input-container button:hover,
@@ -199,8 +201,8 @@ body {
 
 /* Profile Modal Custom Styling */
 .modal-content {
-  background: var(--primary-bg-gradient-end); 
-  color: #fff; 
+  background-color: #ecf0f1; 
+  color: #070707; 
   border-radius: 0.5rem; 
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
@@ -208,11 +210,20 @@ body {
 .modal-header,
 .modal-footer {
   border-bottom: 1px solid #444; 
-  background: var(--primary-bg-gradient-start);
+  background-image: linear-gradient(to right, #b36e39, #94584b);
+}
+
+/* Adjust modal footer button spacing */
+.modal-footer .btn {
+  margin: 0 3.5rem; /* Space between buttons */
+}
+
+#name-edit-fields {
+  flex-basis: 100%; /* Make the input fields take the full width below the label and full name */
 }
 
 .modal-title {
-  color: #fff; 
+  color: #0a0a0a; 
 }
 
 .modal-body {
@@ -242,17 +253,22 @@ body {
 
 
 label, p.mb-0, .edit-input {
-  width: 100%; /* Full width */
+  width: 80%;
+}
+
+.full-name label {
+  position: relative;
+  top: 2.8rem;
 }
 
 .btn-outline-primary {
-  color: #fff; /* Light text for buttons */
+  color: #020202; /* Light text for buttons */
   border-color: #4e6a85; /* Border color for buttons */
 }
 
 .btn-outline-primary:hover {
   background-color: #4e6a85; /* Hover state for buttons */
-  color: #fff;
+  color: #0c0c0c;
 }
 
 .btn-primary {
@@ -265,13 +281,41 @@ label, p.mb-0, .edit-input {
   border-color: #95a5a6; /* Border color for secondary button */
 }
 
+.form-group {
+  align-items: center;
+  margin-bottom: 1rem;
+}
 
+/* Profile info and edit button alignment */
+.profile-info-container {
+  flex-grow: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.full-name-edit-container {
+  align-items: center;
+  margin-top: 0.5rem;
+}
 .edit-btn {
-  display: block; 
   background-color: transparent;
   border: none;
-  color: #fff;
-  margin-top: 0.5rem;
+  color: #0a0a0a;
+  padding: 0.5rem;
+  cursor: pointer;
+}
+
+/* Adjustments for input fields to appear inline */
+.edit-input {
+  margin-right: 4px; /* Add some spacing between the inputs */
+  flex-grow: 1; /* Allow input fields to grow */
+}
+
+.edit-btn-container {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
 }
 
 .edit-btn:hover {

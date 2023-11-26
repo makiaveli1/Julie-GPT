@@ -4,6 +4,10 @@
 {% endblock %}
 {% block content %}
   <div class="container">
+    <!-- Username Display at the Top Center of the Page -->
+    <div class="username-display-container">
+      <span class="username-display">Welcome, {{ request.user.username }}!</span>
+    </div>
     <!-- Profile Button -->
     <div class="username-container">
       <button id="open-profile-btn" class="btn btn-primary btn-md profile-btn" data-toggle="modal" data-target="#profileModal">Profile</button>
@@ -18,71 +22,69 @@
           <div class="modal-body">
             <form id="profile-form">
               <!-- Profile Picture Display -->
-              <div class="profile-picture-container">
-                <img id="current-profile-picture" src="" alt="Profile Picture" class="img-fluid profile-picture" />
+              <div class="form-group text-center">
+                <img id="current-profile-picture" src="" alt="Profile Picture" class="profile-picture rounded-circle mb-3" />
               </div>
-              <!-- Full Name Display and Edit -->
-              <div class="form-group justify-content-between">
-                <!-- Display Full Name -->
-                <div>
-                  <label>Full Name:</label>
-                  <p id="display-full-name" class="profile-info mb-0">[Full Name Here]</p>
-                </div>
-                <!-- Edit Full Name -->
-                <div class="flex-shrink-1">
-                  <!-- First Name Input -->
-                  <input type="text" id="user-first-name" name="first_name" class="form-control edit-input hidden" placeholder="First Name" />
-                  <!-- Last Name Input -->
-                  <input type="text" id="user-last-name" name="last_name" class="form-control edit-input hidden" placeholder="Last Name" />
-                  <!-- Edit Button -->
-                  <button type="button" class="btn btn-outline-primary btn-sm edit-btn" data-field="full-name"><i class="fas fa-pencil-alt"></i>Edit</button>
+              <!-- Full Name -->
+              <div class="form-group full-name">
+                <label>Full Name:</label>
+                <div class="full-name-edit-container">
+                  <div class="edit-btn-container">
+                    <button type="button" class="btn btn-outline-primary btn-sm edit-btn" data-field="full-name"><i class="fas fa-pencil-alt"></i>Edit</button>
+                  </div>
+                  <div id="full-name-display-container" class="profile-info-container">
+                    <p id="display-full-name" class="profile-info mb-2">Gbemi Akadiri</p>
+                    <!-- First Name Input -->
+                    <input type="text" id="user-first-name" name="first_name" class="form-control edit-input hidden" placeholder="First Name" />
+                    <!-- Last Name Input -->
+                    <input type="text" id="user-last-name" name="last_name" class="form-control edit-input hidden" placeholder="Last Name" />
+                  </div>
                 </div>
               </div>
               <!-- Email -->
-              <div class="form-group justify-content-between">
-                <div>
-                  <label for="user-email">Email:</label>
-                  <p id="display-email" class="profile-info mb-0"></p>
-                </div>
-                <div class="flex-shrink-1">
-                  <input type="email" id="user-email" name="email" class="form-control edit-input hidden" />
+              <div class="form-group">
+                <label>Email:</label>
+                <div class="profile-info-container">
+                  <p id="display-email" class="profile-info mb-2"></p>
+                  <input type="email" id="user-email" name="email" class="form-control edit-input hidden" placeholder="Email" />
                   <button type="button" class="btn btn-outline-primary btn-sm edit-btn" data-field="email"><i class="fas fa-pencil-alt"></i>Edit</button>
                 </div>
               </div>
+
               <!-- Phone Number -->
-              <div class="form-group justify-content-between">
-                <div>
-                  <label for="user-phone">Phone Number:</label>
-                  <p id="display-phone" class="profile-info mb-0"></p>
-                </div>
-                <div class="flex-shrink-1">
-                  <input type="tel" id="user-phone" name="phone" class="form-control edit-input hidden" />
+              <div class="form-group">
+                <label>Phone Number:</label>
+                <div class="profile-info-container">
+                  <p id="display-phone" class="profile-info mb-2"></p>
+                  <input type="tel" id="user-phone" name="phone" class="form-control edit-input hidden" placeholder="Phone Number" />
                   <button type="button" class="btn btn-outline-primary btn-sm edit-btn" data-field="phone"><i class="fas fa-pencil-alt"></i>Edit</button>
                 </div>
               </div>
+
               <!-- Bio -->
-              <div class="form-group justify-content-between">
-                <div>
-                  <label for="user-bio">Bio:</label>
-                  <p id="display-bio" class="profile-info mb-0"></p>
-                </div>
-                <div class="flex-shrink-1">
-                  <textarea id="user-bio" name="bio" class="form-control edit-input hidden"></textarea>
+              <div class="form-group">
+                <label>Bio:</label>
+                <div class="profile-info-container">
+                  <p id="display-bio" class="profile-info mb-2"></p>
+                  <textarea id="user-bio" name="bio" class="form-control edit-input hidden" placeholder="Bio"></textarea>
                   <button type="button" class="btn btn-outline-primary btn-sm edit-btn" data-field="bio"><i class="fas fa-pencil-alt"></i>Edit</button>
                 </div>
               </div>
+
               <!-- Profile Picture Input -->
               <div class="form-group">
-                <label for="profile-picture">Profile Picture:</label>
+                <label>Profile Picture:</label>
                 <input type="file" id="profile-picture" name="profile_picture" class="form-control" accept="image/*" />
               </div>
-              <!-- CSRF Token Placeholder -->
+
+              <!-- CSRF Token -->
               {% csrf_token %}
             </form>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
             <button type="submit" form="profile-form" class="btn btn-primary">Save changes</button>
+            <button type="button" class="btn btn-danger" id="confirm-delete-btn" data-delete-url="{% url 'delete_account' %}" data-csrf-token="{{ csrf_token }}">Delete</button>
           </div>
         </div>
       </div>
@@ -95,15 +97,12 @@
         <a href="{% url 'logout' %}" class="btn btn-danger btn-md" role="button">Logout</a>
       {% endif %}
     </div>
-
     <!-- Chatbox -->
     <div class="chatbox">
       <header class="sticky-top">Talk to JULIE:</header>
       <div id="chat-container">
         {% for message in chat_session.messages %}
-          <div class="message {% if message.role == 'user' %}
-
-            {% endif %}">
+          <div class="message {% if message.role == 'user' %}{% endif %}">
             {% if message.role == 'user' %}
               {% if request.user.profile_picture_url %}
                 <img src="{{ request.user.profile_picture_url }}" alt="User" class="avatar" />
@@ -111,7 +110,8 @@
                 <i class="fas fa-user avatar"></i>
               {% endif %}
             {% else %}
-              <img src="{% static 'images/julie.jpg' %}" alt="Julie" class="avatar chatbot-avatar" />
+              <!-- Updated URL for Julie's image -->
+              <img src="https://res.cloudinary.com/djpwaljln/image/upload/v1700917565/d4s3fsmey1cykuchwvsc.jpg" alt="Julie" class="avatar chatbot-avatar" />
             {% endif %}
             <span class="message-text">{{ message.message|escape }}</span>
             <span class="timestamp">{{ message.timestamp }}</span>
@@ -132,9 +132,23 @@
       </div>
     </div>
   </div>
-  <!-- At the end of your HTML before the script tags -->
+  <!-- Delete the account-->
+  <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="confirmDeleteModalLabel">Confirm Account Deletion</h5>
+        </div>
+        <div class="modal-body">Are you sure you want to delete your account? This action cannot be undone.</div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-danger" id="confirm-delete-btn">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
   <script type="text/javascript">
-    let chatbotAvatarUrl = "{% static 'images/julie.jpg' %}"
+    let chatbotAvatarUrl = 'https://res.cloudinary.com/djpwaljln/image/upload/v1700917565/d4s3fsmey1cykuchwvsc.jpg'
     let currentUserProfilePicUrl = "{{ request.user.profile_picture_url|default:'/path/to/default/profile/image.png' }}"
   </script>
 {% endblock %}

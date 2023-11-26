@@ -1,45 +1,96 @@
 /* Julie_bot\static\css\style_login.css */
-  body {
-    background-color: #f0f0f0;
+  body, html {
+    height: 100%; 
+    margin: 0; 
   }
+
+  /* Header Styles */
+  .page-header {
+    background: linear-gradient(to right, #676c6e, #2c3e50);
+    padding: 10px 0;
+    text-align: center;
+  }
+
+  .page-header nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .page-header nav ul li {
+    display: inline;
+    margin-right: 20px;
+  }
+
   .login-container {
+    position: relative;
+    z-index: 2;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
   }
+
   .card {
     max-width: 400px;
+    width: 100%;
   }
+
+  .video-background {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    overflow: hidden;
+    z-index: -1; /* Stay behind other content */
+  }
+  
+  #bg-video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover; /* Cover the full viewport */
+  }
+
   .card-header {
-    background-color: #007bff;
+    background-image: linear-gradient(to right, #e4b692, #cb8374);
     color: white;
     font-size: 24px;
     font-weight: bold;
     text-align: center;
   }
+
   .card-body {
     padding: 30px;
   }
+
   .form-group {
     margin-bottom: 20px;
   }
+
   label {
     font-weight: bold;
     display: block;
     margin-bottom: 5px;
   }
+
   input[type=text], input[type=password] {
     border-radius: 4px;
     border: 1px solid #ccc;
+    border-color: #cb8374;
     padding: 10px;
     font-size: 16px;
     width: 100%;
     box-sizing: border-box;
     margin-bottom: 10px;
+    transition: border-color 0.3s ease;
   }
+
   button[type=submit] {
-    background-color: #007bff;
+    background-image: linear-gradient(to right, #e4b692, #cb8374);
     color: white;
     font-size: 16px;
     font-weight: bold;
@@ -49,9 +100,11 @@
     cursor: pointer;
     width: 100%;
   }
+
   button[type=submit]:hover {
-    background-color: #0062cc;
+    background-image: linear-gradient(to right, #d1a482, #b47264);
   }
+
   .alert-danger {
     background-color: #f8d7da;
     color: #721c24;
@@ -60,3 +113,246 @@
     border: 1px solid #f5c6cb;
     border-radius: 4px;
   }
+    
+  /* Login Modal Styles */
+  .modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    align-items: center; /* Align vertical */
+    justify-content: center; /* Align horizontal */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+    transition: opacity 0.4s ease, visibility 0.4s ease;
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  .modal-open {
+    display: flex;
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .modal-content {
+    position: relative;
+    width: 20%; /* Adjust width as needed */
+    padding: 20px;
+    top: 15rem;
+    border: 1px solid #888;
+    background-image: linear-gradient(to right, #b36e39, #94584b);
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+    margin: auto; /* This will center the modal if flexbox fails */
+    backface-visibility: hidden;
+  }
+
+  /* Responsive for smaller devices */
+  @media (max-width: 768px) {
+    .modal-content {
+      width: 50%;
+    }
+  }
+
+  .close-button {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+  }
+
+  .close-button:hover,
+  .close-button:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  /* Style for the text above buttons */
+.welcome-text, .welcome-back-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.new-here, .youre-back {
+  font-size: 1.0rem; /* Large text size */
+  font-weight: bold; /* Bold text */
+  margin-bottom: 0.5rem; /* Space above the button */
+  color: #ffffff; /* A color that matches the background */
+  text-transform: uppercase; /* Uppercase text for style */
+}
+
+/* Ensure this container exists in your HTML where the buttons are located */
+.auth-container {
+  display: flex;
+  flex-direction: row; /* Align buttons horizontally */
+  align-items: center;
+  justify-content: center;
+  height: 100vh; /* Full viewport height to center vertically */
+}
+
+/* Specific selector for auth buttons with increased margin */
+.auth-container .btn {
+  margin: 0 25px; /* Increase space between buttons */
+  padding: 10px 20px; /* Optimal padding for buttons */
+}
+
+/* Additional styling */
+.auth-container .btn,
+.auth-container a.btn {
+  border: none; /* No border for a cleaner look */
+  border-radius: 25px; /* Rounded corners */
+  transition: all 0.3s ease; /* Smooth transition for hover effects */
+  text-transform: uppercase; /* Makes text uppercase */
+  font-weight: bold; /* Makes the font bold */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+  margin: 0 4rem; /* Space between buttons */
+  padding: 1rem 4rem; /* Optimal padding for buttons */
+}
+
+/* Hover Effects */
+.auth-container button.btn:hover,
+.auth-container a.btn:hover {
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* Increased shadow on hover */
+  transform: translateY(0.5rem); /* Slight raise */
+}
+
+/* Active Effects */
+.auth-container button.btn:active,
+.auth-container a.btn:active {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Decreased shadow when button is clicked */
+  transform: translateY(1px); /* Button looks like it's being pressed */
+}
+
+/* Soft peach to terracotta gradient for a harmonious look with the background */
+.btn-primary {
+  background-image: linear-gradient(to right, #e4b692, #cb8374);
+  color: #fff; /* White text for better contrast */
+}
+
+/* Muted gold to deeper bronze gradient for a luxurious feel */
+.btn-secondary {
+  background-image: linear-gradient(to right, #d9b28a, #bfa58a);
+  color: #fff;
+}
+
+/* Hover effects */
+.auth-container .btn:hover {
+  /* Slightly shift the gradient on hover for a dynamic effect */
+  background-image: linear-gradient(to right, #d1a482, #b47264);
+}
+
+.auth-container a.btn-secondary:hover {
+  background-image: linear-gradient(to right, #c49a78, #a89078);
+}
+
+/* Active (clicked) state effects */
+.auth-container .btn:active {
+  /* Darken the gradient for a pressed button effect */
+  background-image: linear-gradient(to right, #b98c6e, #9e6b5a);
+}
+
+.auth-container a.btn-secondary:active {
+  background-image: linear-gradient(to right, #af846c, #96765e);
+}
+
+/* Add this if you want to ensure that the buttons don't wrap on smaller screens */
+@media (max-width: 768px) {
+  .auth-container {
+    flex-wrap: nowrap;
+  }
+}
+
+
+/* Small devices (landscape phones, 576px and up) */
+@media (min-width: 576px) { 
+  .modal-content {
+    width: 80%; /* Adjust the modal width for small devices */
+  }
+}
+
+/* Medium devices (tablets, 768px and up) */
+@media (min-width: 768px) { 
+  .modal-content {
+    width: 60%;
+  }
+}
+
+/* Large devices (desktops, 992px and up) */
+@media (min-width: 992px) { 
+  .modal-content {
+    width: 50%;
+  }
+  .auth-container .btn,
+  .auth-container a.btn {
+    padding: 0.8rem 3rem; /* Adjust padding for larger screens */
+    margin: 0 2rem; /* Adjust margin for larger screens */
+  }
+}
+
+/* Extra large devices (large desktops, 1200px and up) */
+@media (min-width: 1200px) {
+  .modal-content {
+    width: 20%;
+  }
+  .auth-container {
+    flex-direction: row; /* Ensure buttons are in a row */
+  }
+  .welcome-text p,
+  .welcome-back-text p {
+    font-size: 1.25rem; /* Larger text for larger screens */
+  }
+}
+
+/* Considering different orientations */
+@media (orientation: portrait) {
+  /* Portrait styles */
+  .auth-container .btn,
+  .auth-container a.btn {
+    padding: 1rem; /* Smaller padding for portrait orientation */
+    margin: 0.5rem; /* Smaller margin for portrait orientation */
+  }
+}
+
+@media (orientation: landscape) {
+  /* Landscape styles */
+  .auth-container .btn,
+  .auth-container a.btn {
+    padding: 1.5rem 4rem; /* Larger padding for landscape orientation */
+    margin: 1rem 4rem; /* Larger margin for landscape orientation */
+  }
+}
+
+/* Accessibility improvements for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .auth-container button.btn,
+  .auth-container a.btn {
+    transition: none; /* Remove transitions/animations */
+  }
+}
+
+/* Print styles */
+@media print {
+  body, html {
+    background: none;
+    color: black;
+  }
+  
+  .video-background,
+  .modal,
+  .page-header,
+  .close-button {
+    display: none; /* Hide elements not necessary for printing */
+  }
+  
+  .auth-container {
+    display: block; /* Stack buttons for print layout */
+  }
+  
+  .auth-container .btn,
+  .auth-container a.btn {
+    box-shadow: none; /* Remove shadow for print */
+  }
+}
