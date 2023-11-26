@@ -46,6 +46,16 @@ $(document).ready(function () {
   const $profileModal = $("#profileModal");
   const $toastContainer = $(".toast-container");
 
+  function generateUniqueId() {
+    var uniqueId =
+      "msg-" +
+      Date.now().toString() +
+      "-" +
+      Math.random().toString(36).substr(2, 9);
+    console.log("Generated ID:", uniqueId);
+    return uniqueId;
+  }
+
   // Function to append toasts to the toast container
   function showToast(message, type = "info") {
     try {
@@ -231,7 +241,7 @@ $(document).ready(function () {
     if (!isUserActive && Notification.permission === "granted") {
       new Notification("New message", {
         body: message,
-        icon: "/path/to/icon.png",
+        icon: "J/media/images/julie.jpg",
       }).onclick = function () {
         window.focus();
       };
@@ -252,59 +262,57 @@ $(document).ready(function () {
     );
   }
 
-  function appendMessage(className, text, isHtml, messageId) {
-    // Check if this message ID is already in the chat
+  function getCurrentTimestamp() {
+    // Get the current time in "HH:MM AM/PM" format
+    return new Date().toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
+  }
+
+  function appendMessage(className, text, isHtml, messageId, timestamp) {
     if ($("#" + messageId).length > 0) {
-      // This message is already in the chat, so don't append it again
-      return;
+      return; // If the message with the given ID already exists, don't append it again
     }
 
-    // Create a new div element for the message with the message ID
     const messageDiv = $("<div>")
       .addClass("message " + className)
       .attr("id", messageId);
-
-    // Decide which avatar to use based on the message class
     let avatarImg;
+
     if (className.includes("user-message")) {
       avatarImg = $("<img>", {
-        src: currentUserProfilePicUrl, // This variable should hold the user's avatar URL
+        src: currentUserProfilePicUrl, // Ensure this variable is defined and holds the current user's avatar URL
         alt: "User",
         class: "avatar",
       });
     } else if (className.includes("chatbot-message")) {
       avatarImg = $("<img>", {
-        src: chatbotAvatarUrl, // This variable should hold the chatbot's avatar URL
+        src: chatbotAvatarUrl, // Ensure this variable is defined and holds the chatbot's avatar URL
         alt: "Chatbot",
         class: "avatar chatbot-avatar",
       });
     } else {
-      // If the message does not belong to the user or chatbot, use a default avatar
       avatarImg = $("<img>", {
-        src: "/path/to/default/avatar.png", // Replace with the path to a default avatar image
+        src: "/path/to/default/avatar.png", // Replace with your default avatar image path
         alt: "Avatar",
         class: "avatar",
       });
     }
 
-    // Append the avatar to the message div
     messageDiv.append(avatarImg);
-
-    // Create a span element for the message text
     const messageTextSpan = $("<span>").addClass("message-text");
-    // Append the message text as HTML or text based on the isHtml flag
     isHtml ? messageTextSpan.html(text) : messageTextSpan.text(text);
-
-    // Append the message text span to the message div
     messageDiv.append(messageTextSpan);
 
-    // Append the message div to the chat container
+    if (timestamp) {
+      const timestampSpan = $("<span>").addClass("timestamp").text(timestamp);
+      messageDiv.append(timestampSpan);
+    }
+
     $("#chat-container").append(messageDiv);
-
-    // Animate the message div to fade in
     messageDiv.css({ opacity: 0 }).animate({ opacity: 1 }, 500);
-
-    // Scroll the chat container to the bottom to show the new message
     scrollToBottom();
   }
 
@@ -318,6 +326,12 @@ $(document).ready(function () {
   }
 
   // Typing indicator
+  function showTypingIndicator() {
+    const typingIndicatorHtml =
+      '<div class="typing-indicator">Julie is typing...</div>';
+    $("#chat-container").append(typingIndicatorHtml);
+  }
+
   function removeTypingIndicator() {
     $(".typing-indicator").remove();
   }
@@ -326,46 +340,71 @@ $(document).ready(function () {
     return Math.min(120 * message.length, 3000);
   }
 
-  // Chat message submission
-  $(".input-container form").on("submit", function (event) {
-    event.preventDefault();
-    const messageInput = $('input[name="message"]');
-    let messageText = messageInput.val().trim();
-    if (messageText === "") return;
-    appendMessage("user-message", `${messageText}`);
-    messageInput.val("");
-    setTimeout(() => {
-      sendMessage(messageText);
-    }, calculateTypingDelay(messageText));
-  });
+  function sendMessage(messageText, clientMessageId) {
+    const timestamp = getCurrentTimestamp(); // Get the current timestamp for immediate display
+    appendMessage(
+      "user-message",
+      messageText,
+      false,
+      clientMessageId,
+      timestamp
+    ); // Append the user message immediately with the current timestamp
 
-  // Send message to server
-  function sendMessage(messageText) {
-    console.log("Sending message:", messageText); // Log the message being sent
+    // Clear the input field after appending the message
+    $('input[name="message"]').val("");
+
+    showTypingIndicator(); // Show typing indicator after sending user message
 
     $.ajax({
       type: "POST",
       url: "",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
-        "X-CSRFToken": getCookie("csrftoken"),
+        "X-CSRFToken": getCookie("csrftoken"), // Ensure you're getting the CSRF token correctly
       },
-      data: { message: messageText },
+      data: {
+        message: messageText,
+        client_message_id: clientMessageId, // Make sure this ID is being passed correctly
+      },
       dataType: "json",
     })
       .done(function (data) {
-        console.log("Received response:", data); // Log the response from the server
-        removeTypingIndicator();
-        appendMessage("chatbot-message", data.response);
+        if (data.status === "success") {
+          setTimeout(function () {
+            removeTypingIndicator(); // Remove typing indicator
+            appendMessage(
+              "chatbot-message",
+              data.response,
+              false,
+              data.message_id,
+              data.timestamp
+            ); // Append chatbot's message
+            if (!isUserActive) {
+              notifyUser("Chatbot has responded");
+            }
+          }, calculateTypingDelay(data.response));
+        } else {
+          showToast(data.message, "warning"); // Handle non-success statuses
+        }
       })
       .fail(function (jqXHR, textStatus) {
-        console.log("Failed to send message:", textStatus); // Log any failure in sending
         showToast(
           "Sorry, there was an issue with sending your message. Please try again.",
           "danger"
         );
       });
   }
+
+  $(".input-container form").on("submit", function (event) {
+    event.preventDefault();
+    const messageInput = $('input[name="message"]');
+    const messageText = messageInput.val().trim();
+    if (messageText === "") return;
+
+    const clientMessageId = generateUniqueId();
+    sendMessage(messageText, clientMessageId);
+    messageInput.val(""); // Clear the input field after sending the message
+  });
 
   // Cookie retrieval
   function getCookie(name) {
@@ -386,8 +425,25 @@ $(document).ready(function () {
 
   // Initial connection status update
   updateConnectionStatus();
+  var confirmDeleteBtn = document.getElementById("confirm-delete-btn");
+  confirmDeleteBtn.addEventListener("click", function () {
+    var deleteUrl = this.getAttribute("data-delete-url"); // Get the delete URL
+    var csrfToken = this.getAttribute("data-csrf-token"); // Get the CSRF token
 
-  // Modal and toast initialization
-  $profileModal.modal({ show: false });
-  $(".toast").toast({ autohide: true });
+    $.ajax({
+      url: deleteUrl,
+      method: "POST",
+      data: {
+        csrfmiddlewaretoken: csrfToken,
+      },
+      success: function (response) {
+        // Redirect to the login page after deletion
+        window.location.href = "/login/"; // Change this to the correct URL if needed
+      },
+      error: function (xhr, textStatus, errorThrown) {
+        // Handle errors here
+        console.error("Error deleting account: ", textStatus, errorThrown);
+      },
+    });
+  });
 });
