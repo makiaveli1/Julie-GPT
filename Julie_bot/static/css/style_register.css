@@ -1,45 +1,47 @@
 /* Julie_bot\static\css\style_register.css */
   body {
-    background-color: #f0f0f0;
+    background-image: linear-gradient(to right, #b36e39, #94584b);
+    height: 100%; 
+    margin: 0; 
   }
+
   .register-container {
+    position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
+    z-index: 2;
   }
+
   .card {
     max-width: 400px;
   }
+
   .card-header {
-    background-color: #007bff;
+    background-image: linear-gradient(to right, #b36e39, #94584b);
     color: white;
     font-size: 24px;
     font-weight: bold;
     text-align: center;
   }
+
   .card-body {
     padding: 30px;
   }
+
   .form-group {
     margin-bottom: 20px;
   }
+
   label {
     font-weight: bold;
     display: block;
     margin-bottom: 5px;
   }
-  input[type=text], input[type=password] {
-    border-radius: 4px;
-    border: 1px solid #ccc;
-    padding: 10px;
-    font-size: 16px;
-    width: 100%;
-    box-sizing: border-box;
-    margin-bottom: 10px;
-  }
-  button[type=submit] {
-    background-color: #007bff;
+
+  .btn-secondary {
+    background-image: linear-gradient(to right, #b36e39, #94584b);
     color: white;
     font-size: 16px;
     font-weight: bold;
@@ -49,9 +51,34 @@
     cursor: pointer;
     width: 100%;
   }
-  button[type=submit]:hover {
-    background-color: #0062cc;
+
+  input[type=text], input[type=password] {
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    border-color: #cb8374;
+    padding: 10px;
+    font-size: 16px;
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 10px;
   }
+
+  button[type=submit] {
+    background-image: linear-gradient(to right, #b36e39, #94584b);
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+  }
+
+  button[type=submit]:hover{
+    background-image: linear-gradient(to right, #d1a482, #b47264);
+  }
+
   .alert-danger {
     background-color: #f8d7da;
     color: #721c24;
@@ -60,3 +87,165 @@
     border: 1px solid #f5c6cb;
     border-radius: 4px;
   }
+
+  .video-background {
+    position: absolute; /* Absolute positioning */
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1; /* Behind the content */
+    overflow: hidden;
+  }
+
+  .video-background video {
+      width: 100%;
+      height: auto;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+  }
+
+  .video-background::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('https://res.cloudinary.com/djpwaljln/image/upload/v1700917565/d4s3fsmey1cykuchwvsc.jpg') no-repeat center center;
+      background-size: cover;
+      opacity: 0;
+      transition: opacity 0.5s ease-in-out;
+      z-index: -1;
+  }
+
+  .video-background video:empty::before {
+      opacity: 1;
+  }
+
+  /* Mobile Phones (portrait and landscape) ----------- */
+@media only screen and (max-width: 480px) {
+  .card {
+    width: 90%;
+    margin: 1rem;
+  }
+
+  .card-header {
+    font-size: 20px; /* Slightly smaller to fit on mobile screens */
+  }
+
+  .card-body {
+    padding: 1rem; /* Reduce padding */
+  }
+
+  .form-group {
+    margin-bottom: 15px; /* Less space between form elements */
+  }
+
+  label {
+    font-size: 14px; /* Smaller font size for labels */
+  }
+
+  .btn-secondary,
+  button[type=submit] {
+    font-size: 14px; /* Smaller font size for buttons */
+    padding: 8px 15px; /* Smaller padding for buttons */
+  }
+
+  input[type=text], input[type=password] {
+    font-size: 14px; /* Larger font size for readability */
+    padding: 8px; /* Larger padding for easier interaction */
+  }
+
+  .video-background video {
+    height: auto; /* Adjust video height to maintain aspect ratio */
+  }
+}
+
+/* Tablets (portrait and landscape) ----------- */
+@media only screen and (min-width: 481px) and (max-width: 1024px) {
+  .card {
+    width: 70%; /* Optimal width for tablet screens */
+  }
+
+  .card-header {
+    font-size: 22px; /* Increase font size for readability */
+  }
+
+  .form-group {
+    margin-bottom: 15px; /* Adjust spacing */
+  }
+
+  .btn-secondary,
+  button[type=submit] {
+    font-size: 15px; /* Adjust button font size */
+    padding: 9px 18px; /* Adjust button padding */
+  }
+
+  input[type=text], input[type=password] {
+    font-size: 15px; /* Adjust input font size */
+    padding: 9px; /* Adjust input padding */
+  }
+
+  .video-background video {
+    height: 100vh; /* Full height video background */
+  }
+}
+
+/* Desktops ----------- */
+@media only screen and (min-width: 1025px) {
+  .card {
+    width: 30%; /* Use a fixed width for larger screens */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add a subtle shadow for depth */
+  }
+
+  .card-header,
+  .btn-secondary,
+  button[type=submit] {
+    font-size: 18px; /* Increase font size for better readability */
+  }
+
+  .form-group label {
+    font-size: 16px; /* Increase font size of labels */
+  }
+
+  input[type=text], input[type=password] {
+    font-size: 16px; /* Increase input font size for desktop */
+    padding: 12px; /* More padding for a spacious feel */
+  }
+
+  .video-background video {
+    min-width: 100%; /* Ensure video covers all background */
+    min-height: 100vh; /* Full viewport height */
+  }
+}
+
+/* Larger Desktops ----------- */
+@media only screen and (min-width: 1441px) {
+  .card {
+    width: 25%; /* Smaller width for very large screens */
+    margin-top: 2rem; /* Add more margin on the top */
+  }
+
+  /* Aesthetic enhancements for larger screens */
+  .card-header {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Text shadow for a pop effect */
+  }
+
+  .register-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5); /* Dark overlay for better readability */
+    z-index: -1;
+  }
+
+  .video-background::before {
+    opacity: 0.7; /* Slightly show the fallback image for better loading experience */
+  }
+}

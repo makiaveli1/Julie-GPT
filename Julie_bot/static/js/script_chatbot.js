@@ -97,7 +97,7 @@ $(document).ready(function () {
     try {
       $.ajax({
         type: "GET",
-        url: "get-profile-data/", // URL to fetch profile data
+        url: "/get-profile-data/", // URL to fetch profile data
         dataType: "json",
         success: function (data) {
           $("#display-full-name").text(data.full_name);
@@ -169,12 +169,12 @@ $(document).ready(function () {
         .each(function () {
           isValid &= validateInput($(this));
         });
+
       if (isValid) {
         let formData = new FormData(this);
         // Append editable fields data
         $(".edit-input").each(function () {
           if (!$(this).hasClass("hidden")) {
-            // Changed from 'd-none' to 'hidden'
             formData.append(this.name, $(this).val());
           }
         });
@@ -188,54 +188,55 @@ $(document).ready(function () {
     }
   });
 
+  function submitProfileForm(formData) {
+    $.ajax({
+      type: "POST",
+      url: "/update-profile/",
+      data: formData,
+      contentType: false,
+      processData: false,
+      dataType: "json",
+      success: function (data) {
+        if (data.status === "success") {
+          // Update user profile details on the page
+          if (data.data.first_name) {
+            // Update elements showing the user's first name
+            // For example: $("#userFirstNameDisplay").text(data.data.first_name);
+          }
+          // ... similarly for other fields ...
+
+          // Update avatar if a new URL is provided
+          if (data.data.profile_picture_url) {
+            currentUserProfilePicUrl = data.data.profile_picture_url;
+            updateChatboxAvatar(data.data.profile_picture_url);
+          }
+
+          // Hide modal and show toast
+          $("#profileModal").modal("hide").data("bs.modal", null);
+          $(".modal-backdrop").remove();
+          $("body").removeClass("modal-open");
+          showToast("Profile updated successfully.", "success");
+          // Consider reloading the page here if needed
+          // location.reload(); // Uncomment if you want to reload the page
+        } else {
+          showToast(`Error updating profile: ${data.message}`, "danger");
+        }
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        showToast(
+          `Network error: Could not update profile: ${textStatus} - ${errorThrown}`,
+          "danger"
+        );
+      },
+    });
+  }
+
   function updateChatboxAvatar(newAvatarUrl) {
-    // Update the user avatar in the chatbox
     $(".fa-user.avatar").replaceWith(
       `<img src="${newAvatarUrl}" alt="User" class="avatar" />`
     );
   }
 
-  // Submit profile form to server
-  function submitProfileForm(formData) {
-    try {
-      $.ajax({
-        type: "POST",
-        url: "update-profile/",
-        data: formData,
-        contentType: false,
-        processData: false,
-        dataType: "json",
-        success: function (data) {
-          if (data.status === "success") {
-            if (data.profile_picture_url) {
-              currentUserProfilePicUrl = data.profile_picture_url;
-              updateChatboxAvatar(data.profile_picture_url);
-            }
-            setTimeout(function () {
-              $profileModal.modal("hide");
-              $(".modal-backdrop").remove();
-              $("body").removeClass("modal-open");
-            }, 500);
-            showToast("Profile updated successfully.", "success");
-          } else {
-            showToast(`Error updating profile: ${data.message}`, "danger");
-          }
-        },
-        error: function (jqXHR, textStatus, errorThrown) {
-          console.log("Error details:", textStatus, errorThrown);
-          showToast(
-            `Network error: Could not update profile: ${textStatus} - ${errorThrown}`,
-            "danger"
-          );
-        },
-      });
-    } catch (error) {
-      showToast(
-        "An unexpected error occurred while updating the profile.",
-        "danger"
-      );
-    }
-  }
   // Notification related functions
   function notifyUser(message) {
     if (!isUserActive && Notification.permission === "granted") {
@@ -340,6 +341,27 @@ $(document).ready(function () {
     return Math.min(120 * message.length, 3000);
   }
 
+  // Reset the profile form and reload data when the modal is about to be opened
+  $("#profileModal").on("show.bs.modal", function () {
+    resetProfileForm();
+    loadProfileData(); // Load the latest profile data
+  });
+
+  // Reset profile form when the modal is closed
+  $("#profileModal").on("hidden.bs.modal", function () {
+    resetProfileForm();
+  });
+
+  // Function to reset the profile form
+  function resetProfileForm() {
+    // Hide all input fields and show display elements
+    $(".edit-input").addClass("hidden");
+    $(".profile-info-container p").removeClass("hidden");
+
+    // Clear any existing error messages or statuses
+    $("#form-errors").empty().hide();
+  }
+
   function sendMessage(messageText, clientMessageId) {
     const timestamp = getCurrentTimestamp(); // Get the current timestamp for immediate display
     appendMessage(
@@ -357,7 +379,7 @@ $(document).ready(function () {
 
     $.ajax({
       type: "POST",
-      url: 'chatbot/',
+      url: "chatbot/",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
         "X-CSRFToken": getCookie("csrftoken"), // Ensure you're getting the CSRF token correctly

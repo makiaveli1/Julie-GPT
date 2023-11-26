@@ -488,3 +488,91 @@ input[type="file"]::file-selector-button:hover {
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+
+/* Smartphones (portrait and landscape) ----------- */
+@media only screen and (min-device-width: 320px) and (max-device-width: 480px) {
+  .chatbox {
+    border-radius: 1rem;
+    max-height: 90vh;
+  }
+
+  .chatbox header, .input-container {
+    background-image: linear-gradient(to right, #b36e39, #94584b);
+  }
+
+  .message {
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem; /* Increase padding for touch friendliness */
+    margin: 1rem 0; /* Add more space between messages */
+  }
+
+  .avatar {
+    width: 4rem; /* Make avatars larger */
+    height: 4rem;
+  }
+
+  .message-text {
+    font-size: 1.2rem; /* Increase font size for readability */
+    text-align: center;
+    word-wrap: break-word; /* Ensure long words do not overflow */
+  }
+
+  .input-container {
+    padding: 0.5rem; /* Increase padding around input area */
+  }
+
+  .input-container input {
+    padding: 0.8rem; /* Increase padding for input for ease of typing */
+    border-radius: 1rem;
+
+  }
+
+  .input-container button {
+    padding: 1rem; /* Larger touch area for send button */
+  }
+
+  /* Visual feedback for buttons */
+  .btn-primary:active,
+  .btn-danger:active,
+  .input-container button:active {
+    opacity: 0.6;
+    transform: scale(0.98); /* Slightly shrink the button when pressed */
+  }
+
+  /* Adjusting the header and footer for better visibility */
+  .chatbox header,
+  .input-container {
+    padding: 0.8rem 1rem; /* Increase padding */
+  }
+
+  /* Ensure the chat container is not obscured by virtual keyboards */
+  #chat-container {
+    margin-bottom: 5rem; /* Add space at the bottom of the chat */
+  }
+}
+
+/* Tablets (portrait and landscape) ----------- */
+@media only screen and (min-device-width: 481px) and (max-device-width: 1024px) {
+  .chatbox {
+    max-width: 80%;
+    max-height: 95vh;
+    margin: 2rem;
+  }
+
+  .message {
+    margin-bottom: 1rem;
+  }
+
+  .avatar {
+    width: 4rem;
+    height: 4rem;
+    animation: avatarPulse 3s ease-in-out infinite;
+  }
+
+  .message-text {
+    font-size: larger;
+  }
+}
+
+

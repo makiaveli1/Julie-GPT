@@ -4,7 +4,7 @@ from . import views
 from .import views
 
 urlpatterns = [
-    path('', lambda request: redirect('chatbot', permanent=False)),
+    path('', lambda request: redirect('login', permanent=False)),
     path('chatbot/', views.chatbot, name='chatbot'),
     path('login/', views.login, name='login'),
     path('register/', views.register, name='register'),

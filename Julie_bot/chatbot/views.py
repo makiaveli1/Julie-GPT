@@ -6,6 +6,7 @@ from django.contrib import auth
 from django.contrib import messages
 from django.utils import timezone
 from django.db import transaction
+from django.db import IntegrityError
 from cloudinary.uploader import upload
 from .Juliebot import Juliebot
 from .brain import LongTermMemory
@@ -142,27 +143,39 @@ def login(request):
     return render(request, 'login.html')
 
 
-
 def register(request):
     if request.method == 'POST':
-        username = request.POST['username']
-        email = request.POST['email']
-        password1 = request.POST['password1']
-        password2 = request.POST['password2']
-        if password1 == password2:
-            try:
-                user = CustomUser.objects.create_user(username, email,
-                                                      password1)
-                user.save()
-                auth.login(request, user)
-                return redirect('chatbot')
-            except:
-                error_message = 'Username already taken'
-                return render(request,
-                              'register.html', {'error': error_message})
-        else:
-            error_message = 'Passwords must match'
-            return render(request, 'register.html', {'error': error_message})
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        password1 = request.POST.get('password1')
+        password2 = request.POST.get('password2')
+
+        # Basic validation
+        if not username or not email or not password1 or not password2:
+            messages.error(request, 'All fields are required.')
+            return render(request, 'register.html')
+
+        if password1 != password2:
+            messages.error(request, 'Passwords do not match.')
+            return render(request, 'register.html')
+
+        try:
+            user = CustomUser.objects.create_user(username, email, password1)
+            user.save()
+            auth.login(request, user)
+            # Check for AJAX request
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({"success": "User created and logged in."}, status=200)
+            return redirect('chatbot')
+        except IntegrityError:
+            messages.error(request, 'Username already taken.')
+        except Exception as e:
+            messages.error(
+                request, 'An unexpected error occurred. Please try again.')
+
+    # Check for AJAX request for error handling
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({"errors": dict(messages.get_messages(request))}, status=400)
     return render(request, 'register.html')
 
 
@@ -171,51 +184,47 @@ def update_profile(request):
     if request.method == 'POST':
         user = request.user
 
-        # Update basic profile information only if new value is provided
-        first_name = request.POST.get('first_name')
-        last_name = request.POST.get('last_name')
-        if first_name is not None:
-            user.first_name = first_name
-        if last_name is not None:
-            user.last_name = last_name
-        username = request.POST.get('user_name')
-        if username is not None:
-            user.username = username
+        # Update fields only if they are provided in the request
+        if 'first_name' in request.POST:
+            user.first_name = request.POST.get('first_name')
 
-        email = request.POST.get('email')
-        if email is not None:
-            user.email = email
+        if 'last_name' in request.POST:
+            user.last_name = request.POST.get('last_name')
 
-        phone = request.POST.get('phone')
-        if phone is not None:
-            user.phone = phone
+        if 'email' in request.POST:
+            user.email = request.POST.get('email')
 
-        bio = request.POST.get('bio')
-        if bio is not None:
-            user.bio = bio
+        if 'phone' in request.POST:
+            user.phone = request.POST.get('phone')
+
+        if 'bio' in request.POST:
+            user.bio = request.POST.get('bio')
 
         # Handle profile picture upload
         if 'profile_picture' in request.FILES:
             try:
                 uploaded_file = request.FILES['profile_picture']
-                # Make sure the 'upload' function works correctly
+                # Ensure your upload function works correctly
                 upload_result = upload(uploaded_file)
                 user.profile_picture_url = upload_result.get('url')
             except Exception as e:
-                # Handle exceptions that may occur during file upload
-                return JsonResponse({'status': 'error',
-                                     'message': str(e)}, status=400)
+                return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 
-        # Save the user model after making changes
         user.save()
 
-        # Respond with success message
-        return JsonResponse({'status': 'success',
-                             'message': 'Profile updated successfully.'})
-    else:
-        # Handle incorrect request method
-        return JsonResponse({'status': 'error',
-                             'message': 'Invalid request method'}, status=400)
+        # Return updated user data
+        updated_data = {
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'email': user.email,
+            'phone': user.phone,
+            'bio': user.bio,
+            'profile_picture_url': user.profile_picture_url
+        }
+
+        return JsonResponse({'status': 'success', 'message': 'Profile updated successfully.', 'data': updated_data})
+
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
 
 
 @login_required
