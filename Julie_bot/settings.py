@@ -37,7 +37,7 @@ DEBUG = True
 X_FRAME_OPTIONS = 'SAMEORIGIN'
 
 ALLOWED_HOSTS = ['julie-gpt-e02604a586dc.herokuapp.com', 'localhost',
-                 '127.0.0.1']
+                 '127.0.0.1', '0.0.0.0']
 
 
 # Application definition
