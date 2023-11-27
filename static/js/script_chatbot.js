@@ -379,7 +379,7 @@ $(document).ready(function () {
 
     $.ajax({
       type: "POST",
-      url: "chatbot/",
+      url: "/chatbot/",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
         "X-CSRFToken": getCookie("csrftoken"), // Ensure you're getting the CSRF token correctly
