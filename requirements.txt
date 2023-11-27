@@ -1,5 +1,3 @@
-Prompt
-json
 cloudinary
 Django
 gunicorn
