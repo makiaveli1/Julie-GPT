@@ -14,10 +14,11 @@ from pathlib import Path
 import os
 import dj_database_url
 from django.contrib.messages import constants as messages
-# from dotenv import load_dotenv
+from dotenv import load_dotenv
 
 
-load_dotenv('keys.env')
+if os.environ.get('HEROKU') is None:
+    load_dotenv('keys.env')
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -47,6 +48,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_extensions',
     'cloudinary_storage',
     'cloudinary',
     'chatbot',
@@ -145,8 +147,6 @@ REDIS_HOST = os.getenv("REDIS_HOST")
 REDIS_PORT = os.getenv("REDIS_PORT")
 REDIS_USER = os.getenv("REDIS_USER")
 REDIS_PASS = os.getenv("REDIS_PASS")
-print("Redis Host:", REDIS_HOST)
-print("Redis Port:", REDIS_PORT)
 
 
 MEDIA_URL = '/media/'
@@ -163,17 +163,14 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'handlers': {
-        'file': {
-            'level': 'ERROR',
-            'class': 'logging.FileHandler',
-            'filename': 'error.log',
+        'console': {
+            'class': 'logging.StreamHandler',
         },
     },
     'loggers': {
         'django': {
-            'handlers': ['file'],
+            'handlers': ['console'],
             'level': 'ERROR',
-            'propagate': True,
         },
     },
 }
