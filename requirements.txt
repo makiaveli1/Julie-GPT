@@ -1,6 +1,7 @@
 cloudinary==1.36.0
 dj-database-url==2.1.0
 Django==4.2.6
+django
 gunicorn==20.0.4
 instructor==0.3.1
 openai==1.2.4
