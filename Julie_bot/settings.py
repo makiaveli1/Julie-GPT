@@ -14,7 +14,7 @@ from pathlib import Path
 import os
 import dj_database_url
 from django.contrib.messages import constants as messages
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 
 
 load_dotenv('keys.env')
