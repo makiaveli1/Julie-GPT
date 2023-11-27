@@ -18,7 +18,3 @@ instructor==0.3.1
 openai==1.2.4
 redis==4.6.0
 sentence-transformers==2.2.2
-SQLAlchemy==2.0.22
-sqlparse==0.4.4
-pydantic
-numpy
