@@ -98,18 +98,17 @@ class LongTermMemory:
         """
         try:
             self.redis_client.ping()
-            logger.info(f"""Successfully connected to Redis at
-                        {self.redis_config['HOST']}:{
-                            self.redis_config['PORT']}.""")
+            logger.info("Successfully connected to Redis at %s:%s.",
+                        self.redis_config['HOST'], self.redis_config['PORT'])
         except redis.ConnectionError as e:
             logger.error("Could not connect to Redis. Connection failed.")
             raise e
         except redis.exceptions.AuthenticationError as e:
-            logger.error("""Authentication failed:
-                         invalid username-password pair.""")
+            logger.error("""Authentication failed: invalid
+                         username-password pair.""")
             raise e
         except Exception as e:
-            logger.error(f"Failed to connect to Redis: {e}")
+            logger.error("Failed to connect to Redis: %s", e)
             raise e
 
     def get_conversation_history(self, username):
@@ -137,17 +136,17 @@ class LongTermMemory:
             error_msg = f"""Failed to retrieve conversation history for
             {username} due to Redis error: {e}"""
             logger.error(error_msg)
-            raise Exception(error_msg) from e
+            raise redis.exceptions.RedisError(error_msg) from e
         except json.JSONDecodeError as e:
             error_msg = f"""Failed to decode conversation history for
             {username}. Invalid JSON format: {e}"""
             logger.error(error_msg)
-            raise Exception(error_msg) from e
+            raise ValueError(error_msg) from e
         except Exception as e:
             error_msg = f"""An unexpected error occurred while retrieving
             conversation history for {username}: {e}"""
             logger.error(error_msg)
-            raise Exception(error_msg) from e
+            raise RuntimeError(error_msg) from e
 
     def set_user_data(self, username, user_data):
         """
@@ -165,12 +164,12 @@ class LongTermMemory:
         try:
             validate(instance=user_data, schema=self.schema)
             self.redis_client.set(username, json.dumps(user_data))
-            logger.info(f"Saved user data for {username}")
+            logger.info("Saved user data for %s", username)
         except redis.exceptions.RedisError as e:
-            logger.error(f"Redis operation failed for {username}")
+            logger.error("Redis operation failed for %s", username)
             raise e
         except Exception as e:
-            logger.error(f"Failed to load user data for {username}: {e}")
+            logger.error("Failed to load user data for %s: %s", username, e)
             raise e
 
     def update_conversation_history(self, username, role, content):
@@ -192,15 +191,15 @@ class LongTermMemory:
         value = json.dumps({"role": role, "content": content})
         try:
             self.redis_client.lpush(key, value)
-            logger.info(f"""Added message to conversation history for
-                        {username}""")
+            logger.info("Added message to conversation history for %s",
+                        username)
             # Trimming the list to maintain manageable size
             self.redis_client.ltrim(key, 0, 5000)
-            logger.info(f"Trimmed conversation history for {username}")
+            logger.info("Trimmed conversation history for %s", username)
         except redis.exceptions.RedisError as e:
-            logger.error(f"Redis operation failed for {username}")
+            logger.error("Redis operation failed for %s", username)
             raise e
         except Exception as e:
-            logger.error(f"""Failed to update conversation
-                         history for {username}: {e}""")
+            logger.error("Failed to update conversation history for %s: %s",
+                         username, e)
             raise e
