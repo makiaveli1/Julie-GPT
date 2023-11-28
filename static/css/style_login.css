@@ -260,7 +260,7 @@
 
 
   /* Small devices (landscape phones, 576px and up) */
-  @media (min-width: 425px) { 
+  @media (min-width: 250px) { 
     .modal-content {
       width: 80%; /* Adjust the modal width for small devices */
     }
