@@ -490,7 +490,7 @@ input[type="file"]::file-selector-button:hover {
 }
 
 /* Smartphones (portrait and landscape) ----------- */
-@media only screen and (min-device-width: 320px) and (max-device-width: 480px) {
+@media only screen and (min-device-width: 250px) and (max-device-width: 480px) {
   .chatbox {
     border-radius: 1rem;
     max-height: 90vh;
@@ -556,7 +556,7 @@ input[type="file"]::file-selector-button:hover {
 @media only screen and (min-device-width: 481px) and (max-device-width: 1024px) {
   .chatbox {
     max-width: 80%;
-    max-height: 95vh;
+    max-height: 90vh;
     margin: 2rem;
   }
 
