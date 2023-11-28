@@ -138,7 +138,7 @@
 
   .modal-content {
     position: relative;
-    width: 20%; /* Adjust width as needed */
+    width: 40%; /* Adjust width as needed */
     padding: 20px;
     top: 15rem;
     border: 1px solid #888;
@@ -146,13 +146,6 @@
     box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
     margin: auto; /* This will center the modal if flexbox fails */
     backface-visibility: hidden;
-  }
-
-  /* Responsive for smaller devices */
-  @media (max-width: 768px) {
-    .modal-content {
-      width: 50%;
-    }
   }
 
   .close-button {
@@ -258,45 +251,21 @@
   background-image: linear-gradient(to right, #af846c, #96765e);
 }
 
-/* Add this if you want to ensure that the buttons don't wrap on smaller screens */
-@media (max-width: 768px) {
-  .auth-container {
-    flex-wrap: nowrap;
-  }
-}
-
-
-/* Small devices (landscape phones, 576px and up) */
-@media (min-width: 576px) { 
-  .modal-content {
-    width: 80%; /* Adjust the modal width for small devices */
-  }
-}
-
-/* Medium devices (tablets, 768px and up) */
-@media (min-width: 768px) { 
-  .modal-content {
-    width: 60%;
-  }
-}
-
-/* Large devices (desktops, 992px and up) */
-@media (min-width: 992px) { 
-  .modal-content {
-    width: 50%;
-  }
+  /* Add this if you want to ensure that the buttons don't wrap on smaller screens */
+  @media (max-width: 768px) {
+    .auth-container {
+      flex-wrap: nowrap;
+    }
+  } 
   .auth-container .btn,
   .auth-container a.btn {
     padding: 0.8rem 3rem; /* Adjust padding for larger screens */
     margin: 0 2rem; /* Adjust margin for larger screens */
   }
-}
+
 
 /* Extra large devices (large desktops, 1200px and up) */
-@media (min-width: 1200px) {
-  .modal-content {
-    width: 20%;
-  }
+
   .auth-container {
     flex-direction: row; /* Ensure buttons are in a row */
   }
@@ -304,7 +273,7 @@
   .welcome-back-text p {
     font-size: 1.25rem; /* Larger text for larger screens */
   }
-}
+
 
 /* Considering different orientations */
 @media (orientation: portrait) {

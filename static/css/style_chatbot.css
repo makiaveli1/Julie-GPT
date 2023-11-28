@@ -13,7 +13,7 @@ html {
 
 body {
   margin: 0;
-  height: 90vh;
+  height: 100vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -26,7 +26,7 @@ body {
 .chatbox {
   position: relative;
   width: 100%;
-  height: 90vh;
+  height: 100vh;
   max-height: calc(105vh - 6rem);
   background: var(--chatbox-bg-color);
   box-shadow: var(--chatbox-shadow);
