@@ -1,4 +1,3 @@
-import numpy as np
 import redis
 import json
 import logging
