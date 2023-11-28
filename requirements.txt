@@ -19,5 +19,4 @@ openai==1.2.4
 redis==4.6.0
 python-dotenv==0.19.1
 psycopg2-binary==2.9.9
-sentence-transformers==2.2.2
 jsonschema==4.20.0
