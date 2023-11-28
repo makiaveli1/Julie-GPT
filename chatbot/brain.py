@@ -17,16 +17,11 @@ class LongTermMemory:
             'USERNAME': settings.REDIS_USER,
             'PASSWORD': settings.REDIS_PASS
         }
-        self.initialize_model()
         self.initialize_redis()
         self.schema = {
             "type": "object",
             "properties": {"conversation_history": {"type": "array"}},
         }
-
-    def initialize_model(self):
-        # Initialize SentenceTransformer model only once for efficiency
-        self.model = SentenceTransformer('msmarco-distilbert-base-v4')
 
     def initialize_redis(self):
         # Initialize Redis client with connection pooling
@@ -58,44 +53,6 @@ class LongTermMemory:
         except Exception as e:
             logger.error(f"Failed to connect to Redis: {e}")
             raise e
-
-    def vectorize_text(self, text):
-        if isinstance(text, str):
-            text = [text]
-        if not all(isinstance(t, str) for t in text):
-            logger.error(f"vectorize_text received invalid input: {text}")
-            raise ValueError("Input text must be a string or a list of strings.")
-        return self.model.encode(text)
-
-    def store_vector(self, username, vector):
-        if not isinstance(vector, (np.ndarray, list)):
-            logger.error(f"Expected vector to be a numpy array or a list, got {type(vector)}")
-            raise ValueError(f"Expected vector to be a numpy array or a list, got {type(vector)}")
-        vector_list = vector if isinstance(vector, list) else vector.tolist()
-        key = f"vec:{username}"
-        try:
-            self.redis_client.hset(key, 'vector', json.dumps(vector_list))
-            logger.info(f"Stored vector for {username}")
-        except Exception as e:
-            logger.error(f"Failed to store vector for {username}: {e}")
-            raise e
-
-    def search_similar_conversations(self, username, text):
-        vector = self.vectorize_text(text)
-        vector_list = vector.tolist() if isinstance(vector, np.ndarray) else vector
-        try:
-            # Improved search using Redis Search commands
-            results = self.redis_client.execute_command('FT.SEARCH', f'idx:{username}', f'@vector:[{",".join(map(str, vector_list))}]')
-            logger.info(f"Search results: {results}")
-            return results
-        except Exception as e:
-            logger.error(f"Failed to search for similar conversations for {username}: {e}")
-            raise e
-
-    def update_conversation_history_with_vector(self, username, role, content):
-        vector = self.vectorize_text(content)
-        self.store_vector(username, vector)
-        self.update_conversation_history(username, role, content)
 
     def get_conversation_history(self, username):
         key = f"chat:{username}"
