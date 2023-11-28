@@ -260,7 +260,7 @@
 
 
   /* Small devices (landscape phones, 576px and up) */
-  @media (min-width: 250px) { 
+  @media (min-width: 250px) and (max-width: 595px) { 
     .modal-content {
       width: 80%; /* Adjust the modal width for small devices */
     }
@@ -273,7 +273,7 @@
   }
 
     /* tablets */
-  @media (min-width: 600px)  and (max-width: 1024px) { 
+  @media (min-width: 600px)  and (max-width: 1195px) { 
     .modal-content {
       width: 50%;
     }
@@ -282,7 +282,7 @@
   /* Extra large devices (large desktops, 1200px and up) */
   @media (min-width: 1200px) {
     .modal-content {
-      width: 30%;
+      width: 25%;
     }
     .auth-container {
       flex-direction: row; /* Ensure buttons are in a row */

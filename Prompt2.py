@@ -1,5 +1,5 @@
-from pydantic import BaseModel, Field
 from typing import List
+from pydantic import BaseModel, Field
 import openai
 import instructor
 
@@ -44,7 +44,7 @@ class JulieModel(BaseModel):
     likes: List[str] = Field(default_factory=list)
     dislikes: List[str] = Field(default_factory=list)
     favorite_foods: List[str] = Field(default_factory=list)
-    dietary_restrictions: List[str]  = Field(default_factory=list)
+    dietary_restrictions: List[str] = Field(default_factory=list)
     favorite_books: List[str] = Field(default_factory=list)
     favorite_movies: List[str] = Field(default_factory=list)
     favorite_music: List[str] = Field(default_factory=list)
@@ -68,23 +68,25 @@ class JulieModel(BaseModel):
     hobbies_and_skills: List[str] = Field(default_factory=list)
     personal_growth_achievements: List[str] = Field(default_factory=list)
     instruct_chatbot_to_improvise: str = Field(
-        "The chatbot is encouraged to improvise and fill in gaps in Julie's character using contextually appropriate information that aligns with her established personality and background."
+        """The chatbot is encouraged to improvise and fill in gaps in Julie's
+        character using contextually appropriate information that aligns with
+        her established personality and background."""
     )
 
-
-    
     def format_description(self, username):
-        # This method will manually replace the {User} placeholder with the actual username
+        # This method will manually replace the {User} placeholder
+        # with the actual username
         # throughout all relevant fields.
         formatted_fields = {}
         for field_name, value in self:
             if isinstance(value, str) and '{User}' in value:
-                formatted_fields[field_name] = value.replace('{User}', username)
+                formatted_fields[field_name] = value.replace(
+                    '{User}', username)
             else:
                 formatted_fields[field_name] = value
         # Return a new instance of JulieModel with the formatted fields
         return JulieModel(**formatted_fields)
-    
+
     def string_maker(self):
         # Helper function to convert list to string or return the string as is
         def stringify(value):
@@ -95,5 +97,4 @@ class JulieModel(BaseModel):
         # Use getattr to dynamically access each attribute and apply stringify
         fields = [stringify(getattr(self, field)) for field in self.__fields__]
 
-        return ' '.join([str(field) for field in fields if field]) 
-
+        return ' '.join([str(field) for field in fields if field])
