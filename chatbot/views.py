@@ -28,7 +28,7 @@ long_term_memory = LongTermMemory(redis_config)
 julie_bot = Juliebot(long_term_memory)
 
 
-@login_required
+@login_required(login_url='/login/')
 def chatbot(request):
     if request.method == 'GET':
         chat_session, created = Chat.objects.get_or_create(user=request.user)
