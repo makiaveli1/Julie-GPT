@@ -212,7 +212,7 @@ Through these manual tests, the JavaScript functionalities of 'Julie - Your Pers
 
 ### Manual Testing view:
 
-<iframe src="https://scribehow.com/embed/Manual_Testing_for_Julie__Your_personal_assistant_website__0-f_FbrASw-XI4JwKOC6pA?as=scrollable&skipIntro=true" width="100%" height="640" allowfullscreen frameborder="0"></iframe>
+[View iframe content](https://scribehow.com/embed/Manual_Testing_for_Julie__Your_personal_assistant_website__0-f_FbrASw-XI4JwKOC6pA?as=scrollable&skipIntro=true)
 
 ### Lighthouse:
 Mobile ![Lighthouse mobile](media/images/lighthouse%20mob.png)
