@@ -30,6 +30,17 @@ julie_bot = Juliebot(long_term_memory)
 
 @login_required(login_url='/login/')
 def chatbot(request):
+    """
+    View function for the chatbot page.
+
+    Parameters:
+    - request: The HTTP request object.
+
+    Returns:
+    - If the request method is GET, it renders the chatbot.html template with the chat session.
+    - If the request method is POST, it processes the user input, sends it to the chatbot, and returns a JSON response.
+    - If the request method is neither GET nor POST, it returns a HTTP 400 Bad Request response.
+    """
     if request.method == 'GET':
         chat_session, created = Chat.objects.get_or_create(user=request.user)
         chat_session.refresh_from_db()
@@ -42,9 +53,11 @@ def chatbot(request):
         client_message_id = request.POST.get('client_message_id', None)
 
         if not user_input or not client_message_id:
-            return HttpResponseBadRequest("Invalid or empty message or missing message ID.")
+            return HttpResponseBadRequest("""Invalid or empty message
+                                          or missing message ID.""")
 
-        # Attempt to prevent processing the same message twice by checking for client_message_id
+        # Attempt to prevent processing the same message twice
+        # by checking for client_message_id
         with transaction.atomic():
             chat_session, created = Chat.objects.select_for_update().get_or_create(user=request.user)
             if any(msg.get('client_message_id') == client_message_id for msg in chat_session.messages):
@@ -77,7 +90,7 @@ def chatbot(request):
                 chat_session.save()
 
             except Exception as e:
-                logger.error(f"Error in generating chat response: {e}")
+                logger.error("Error in generating chat response: %s", e)
                 return JsonResponse({'status': 'error',
                                      'message': """Sorry,
                                      there was an error processing your
@@ -97,9 +110,12 @@ def chatbot(request):
 @login_required
 def chatbot_message_sent(request):
     """
-    View to redirect to after a message is sent to prevent resubmission upon refresh.
-    This view can either show a confirmation message or redirect back to the chat page where 
-    the messages can be fetched and displayed. For the purpose of preventing form resubmission,
+    View to redirect to after a message is sent
+    to prevent resubmission upon refresh.
+    This view can either show a confirmation
+    message or redirect back to the chat page where 
+    the messages can be fetched and displayed.
+    For the purpose of preventing form resubmission,
     it simply redirects back to the main chat view.
     """
     # You can optionally add any logic here if you need to process anything
@@ -112,6 +128,18 @@ def chatbot_message_sent(request):
 
 
 def login(request):
+    """
+    View function for handling user login.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+
+    Returns:
+        HttpResponse: The HTTP response object.
+
+    Raises:
+        None
+    """
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
@@ -144,6 +172,18 @@ def login(request):
 
 
 def register(request):
+    """
+    Register a new user.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+
+    Returns:
+        HttpResponse: The HTTP response object.
+
+    Raises:
+        None
+    """
     if request.method == 'POST':
         username = request.POST.get('username')
         email = request.POST.get('email')
@@ -169,9 +209,9 @@ def register(request):
             return redirect('chatbot')
         except IntegrityError:
             messages.error(request, 'Username already taken.')
-        except Exception as e:
-            messages.error(
-                request, 'An unexpected error occurred. Please try again.')
+        except Exception:
+            messages.error(request, '''An unexpected error occurred.
+                           Please try again.''')
 
     # Check for AJAX request for error handling
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
@@ -181,6 +221,19 @@ def register(request):
 
 @login_required
 def update_profile(request):
+    """
+    Update the user profile with the provided data.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+
+    Returns:
+        JsonResponse: A JSON response containing the status, message, and updated user data.
+
+    Raises:
+        Exception: If there is an error during profile picture upload.
+
+    """
     if request.method == 'POST':
         user = request.user
 
@@ -208,7 +261,8 @@ def update_profile(request):
                 upload_result = upload(uploaded_file)
                 user.profile_picture_url = upload_result.get('url')
             except Exception as e:
-                return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+                return JsonResponse({'status': 'error', 'message':
+                                    str(e)}, status=400)
 
         user.save()
 
@@ -222,13 +276,29 @@ def update_profile(request):
             'profile_picture_url': user.profile_picture_url
         }
 
-        return JsonResponse({'status': 'success', 'message': 'Profile updated successfully.', 'data': updated_data})
+        return JsonResponse({'status': 'success', 'message':
+                             'Profile updated successfully.',
+                             'data': updated_data})
 
-    return JsonResponse({'status': 'error', 'message': 'Invalid request method'}, status=400)
+    return JsonResponse({'status': 'error', 'message':
+                        'Invalid request method'}, status=400)
 
 
 @login_required
 def get_profile_data(request):
+    """
+    Retrieves profile data for the authenticated user.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+
+    Returns:
+        JsonResponse: A JSON response containing the profile data.
+
+    Raises:
+        HttpResponseBadRequest: If the request method is not GET.
+    """
+
     if request.method != 'GET':
         return HttpResponseBadRequest("Invalid request method.")
 
@@ -258,6 +328,16 @@ def get_profile_data(request):
 
 @login_required
 def delete_account(request):
+    """
+    Deletes the user account.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+
+    Returns:
+        HttpResponseRedirect: Redirects to the login page after successful deletion.
+        HttpResponseBadRequest: Returns a bad request response if the request method is invalid.
+    """
     if request.method == 'POST':
         user = request.user
         user.delete()
@@ -267,5 +347,14 @@ def delete_account(request):
 
 
 def logout(request):
+    """
+    Logs out the user and redirects to the login page.
+
+    Args:
+        request: The HTTP request object.
+
+    Returns:
+        A redirect response to the login page.
+    """
     auth.logout(request)
     return redirect('login')

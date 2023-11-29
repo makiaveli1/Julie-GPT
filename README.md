@@ -2,7 +2,7 @@
 ## "Bringing Conversational Intelligence to Your Fingertips"
 
 ---
-
+![Am i Responsive](media/images/am-i-responsive.png)
 ### Project Overview
 Julie-Your Personal Chatbot is an interactive web-based chatbot designed to provide users with a unique and engaging conversational experience. This application allows users to interact with Julie, a virtual assistant, for various purposes including information retrieval, entertainment, and general conversation. Targeted towards users seeking a seamless and intuitive chatbot interface, Julie is also equipped with user authentication and profile management features, enhancing personalization and security.
 
