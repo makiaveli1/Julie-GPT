@@ -428,6 +428,44 @@ $(document).ready(function () {
     messageInput.val(""); // Clear the input field after sending the message
   });
 
+  // Export the visible chat as a plain-text file.
+  $("#export-chat-btn").on("click", function () {
+    const lines = [];
+
+    $("#chat-container .message").each(function () {
+      const $message = $(this);
+      const text = $message.find(".message-text").text().trim();
+      if (!text) return;
+
+      const timestamp = $message.find(".timestamp").text().trim();
+      const isUserMessage =
+        $message.hasClass("user-message") ||
+        $message.find(".fa-user, img[alt='User']").length > 0;
+      const speaker = isUserMessage ? "You" : "Julie";
+      const timePrefix = timestamp ? `[${timestamp}] ` : "";
+
+      lines.push(`${timePrefix}${speaker}: ${text}`);
+    });
+
+    if (lines.length === 0) {
+      showToast("There are no messages to export.", "info");
+      return;
+    }
+
+    const blob = new Blob([lines.join("\n") + "\n"], {
+      type: "text/plain;charset=utf-8",
+    });
+    const downloadUrl = URL.createObjectURL(blob);
+    const downloadLink = document.createElement("a");
+
+    downloadLink.href = downloadUrl;
+    downloadLink.download = `julie-chat-${new Date().toISOString().slice(0, 10)}.txt`;
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    downloadLink.remove();
+    URL.revokeObjectURL(downloadUrl);
+  });
+
   // Cookie retrieval
   function getCookie(name) {
     const value = `; ${document.cookie}`;
